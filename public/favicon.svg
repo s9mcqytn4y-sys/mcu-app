@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" width="100%" height="100%">
+  <defs>
+    <linearGradient id="favNavy" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0E3B85" />
+      <stop offset="100%" stop-color="#072E6D" />
+    </linearGradient>
+    <linearGradient id="favRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EF4444" />
+      <stop offset="100%" stop-color="#B91C1C" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded App Icon Background -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#favNavy)" />
+  <rect x="4" y="4" width="56" height="56" rx="12" stroke="#93C5FD" stroke-width="1.5" stroke-opacity="0.3" fill="none" />
+
+  <!-- Stylized Anchor Fluke Bottom -->
+  <path d="M18 42 C18 50, 24 54, 32 54 C40 54, 46 42, 46 42" stroke="#93C5FD" stroke-width="2.5" stroke-linecap="round" fill="none" />
+  
+  <!-- Clinical Medical Cross in Center -->
+  <rect x="28" y="16" width="8" height="28" rx="2" fill="url(#favRed)" />
+  <rect x="18" y="26" width="28" height="8" rx="2" fill="url(#favRed)" />
+  <rect x="29" y="17" width="6" height="26" rx="1" fill="#FFFFFF" opacity="0.3" />
+  <rect x="19" y="27" width="26" height="6" rx="1" fill="#FFFFFF" opacity="0.3" />
+</svg>

@@ -28,6 +28,8 @@ class PemeriksaanMcu extends Model
         'nomor_mcu',
         'tanggal_periksa',
         'berlaku_sampai',
+        'tanggal_pemeriksaan',
+        'tanggal_kedaluwarsa',
         'nama_perusahaan',
         'status_kelayakan',
         'wilayah_operasi',
@@ -52,6 +54,42 @@ class PemeriksaanMcu extends Model
     }
 
     /**
+     * Accessor alias untuk tanggal_periksa (kompatibilitas form/viewer lama).
+     */
+    public function getTanggalPemeriksaanAttribute(): ?\Carbon\Carbon
+    {
+        return isset($this->attributes['tanggal_periksa']) && $this->attributes['tanggal_periksa'] !== null
+            ? \Carbon\Carbon::parse($this->attributes['tanggal_periksa'])
+            : null;
+    }
+
+    /**
+     * Mutator alias untuk tanggal_pemeriksaan.
+     */
+    public function setTanggalPemeriksaanAttribute(mixed $value): void
+    {
+        $this->attributes['tanggal_periksa'] = $value;
+    }
+
+    /**
+     * Accessor alias untuk berlaku_sampai (kompatibilitas form/viewer lama).
+     */
+    public function getTanggalKedaluwarsaAttribute(): ?\Carbon\Carbon
+    {
+        return isset($this->attributes['berlaku_sampai']) && $this->attributes['berlaku_sampai'] !== null
+            ? \Carbon\Carbon::parse($this->attributes['berlaku_sampai'])
+            : null;
+    }
+
+    /**
+     * Mutator alias untuk tanggal_kedaluwarsa.
+     */
+    public function setTanggalKedaluwarsaAttribute(mixed $value): void
+    {
+        $this->attributes['berlaku_sampai'] = $value;
+    }
+
+    /**
      * Relasi ke data pasien terkait.
      *
      * @return BelongsTo<Pasien, $this>
@@ -69,6 +107,16 @@ class PemeriksaanMcu extends Model
     public function lampiranMcu(): HasMany
     {
         return $this->hasMany(LampiranMcu::class, 'pemeriksaan_mcu_id');
+    }
+
+    /**
+     * Alias relasi berkas lampiran untuk kompatibilitas form & resource Filament.
+     *
+     * @return HasMany<LampiranMcu, $this>
+     */
+    public function lampiran(): HasMany
+    {
+        return $this->lampiranMcu();
     }
 
     /**
