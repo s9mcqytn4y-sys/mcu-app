@@ -139,7 +139,7 @@ class PasienResource extends Resource
                     ->modalSubmitActionLabel('Ya, Hapus Data')
                     ->modalCancelActionLabel('Batal')
                     ->color('danger')
-                    ->visible(fn (): bool => auth()->user()?->isAdministrator() ?? false),
+                    ->visible(fn (): bool => ($user = auth()->user()) instanceof \App\Models\User && $user->apakahAdministrator()),
             ])
             ->bulkActions([
                 DeleteBulkAction::make()
@@ -149,7 +149,7 @@ class PasienResource extends Resource
                     ->modalDescription('Apakah Anda yakin ingin menghapus data pasien terpilih beserta seluruh rekam pemeriksaan terkait?')
                     ->modalSubmitActionLabel('Ya, Hapus Semua Terpilih')
                     ->modalCancelActionLabel('Batal')
-                    ->visible(fn (): bool => auth()->user()?->isAdministrator() ?? false),
+                    ->visible(fn (): bool => ($user = auth()->user()) instanceof \App\Models\User && $user->apakahAdministrator()),
             ]);
     }
 

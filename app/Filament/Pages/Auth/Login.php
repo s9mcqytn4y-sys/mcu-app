@@ -27,7 +27,7 @@ class Login extends BaseLogin
 
     public function getSubheading(): string | Htmlable | null
     {
-        return 'Klinik & Laboratorium Medical Check-Up Indosehat 2003';
+        return 'Silakan masukkan kredensial akun Anda';
     }
 
     public function form(Form $form): Form
@@ -44,14 +44,15 @@ class Login extends BaseLogin
     protected function getLoginFormComponent(): Component
     {
         return TextInput::make('login')
-            ->label('Nama Pengguna (Username) atau Email')
-            ->placeholder('Masukkan nama pengguna atau email')
+            ->label('Username atau Email')
+            ->placeholder('nama@email.com atau username')
+            ->prefixIcon('heroicon-m-user')
             ->required()
             ->autocomplete('username')
             ->autofocus()
             ->extraInputAttributes([
                 'tabindex' => 1,
-                'aria-label' => 'Nama Pengguna atau Email',
+                'aria-label' => 'Username atau Email',
                 'class' => 'min-h-[44px]',
             ]);
     }
@@ -60,9 +61,10 @@ class Login extends BaseLogin
     {
         return TextInput::make('password')
             ->label('Kata Sandi')
-            ->placeholder('Masukkan kata sandi akun')
+            ->placeholder('••••••••')
             ->password()
             ->revealable()
+            ->prefixIcon('heroicon-m-lock-closed')
             ->autocomplete('current-password')
             ->required()
             ->extraInputAttributes([
@@ -75,9 +77,9 @@ class Login extends BaseLogin
     protected function getRememberFormComponent(): Component
     {
         return Checkbox::make('remember')
-            ->label('Ingat Saya di Perangkat Ini')
+            ->label('Ingat saya')
             ->extraAttributes([
-                'class' => 'cursor-pointer min-w-[20px] min-h-[20px]',
+                'class' => 'cursor-pointer select-none text-sm text-gray-400',
             ]);
     }
 
@@ -85,6 +87,8 @@ class Login extends BaseLogin
     {
         return Action::make('authenticate')
             ->label('Masuk ke Sistem')
+            ->icon('heroicon-m-arrow-right-end-on-rectangle')
+            ->iconPosition('after')
             ->submit('authenticate');
     }
 
@@ -106,7 +110,7 @@ class Login extends BaseLogin
     protected function throwFailureValidationException(): never
     {
         throw ValidationException::withMessages([
-            'data.login' => 'Nama pengguna/email atau kata sandi tidak valid.',
+            'data.login' => 'Username/email atau kata sandi yang Anda masukkan salah.',
         ]);
     }
 }

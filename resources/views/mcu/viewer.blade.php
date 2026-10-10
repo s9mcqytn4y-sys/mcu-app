@@ -458,49 +458,68 @@
             </aside>
         </article>
 
-        <!-- Section 2: Lampiran File (Opsional - Berkas ditumpuk di bawah sertifikat cover) -->
+        <!-- Section 2: Lampiran File (Dibatasi Akses Petugas Terautentikasi / UU PDP) -->
         @if($pemeriksaan->lampiranMcu && $pemeriksaan->lampiranMcu->isNotEmpty())
-            @foreach($pemeriksaan->lampiranMcu as $index => $lampiran)
-                @php
-                    $isPdf = str_ends_with(strtolower((string) $lampiran->path_berkas), '.pdf');
-                    $fileUrl = route('mcu.file.view', ['uuid' => $pemeriksaan->token_verifikasi, 'index' => $index]);
-                    $downloadUrl = route('mcu.file.download', ['uuid' => $pemeriksaan->token_verifikasi, 'index' => $index]);
-                @endphp
-                <section class="stacked-section" aria-label="Dokumen Fisik Lampiran MCU">
-                    <div class="stacked-header">
-                        <span class="stacked-title">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                            Lampiran Hasil Pemeriksaan Asli
-                        </span>
-                        <div class="stacked-btn-group">
-                            <a href="{{ $fileUrl }}" target="_blank" rel="noopener noreferrer" class="btn-attachment-action btn-open-full">
-                                Buka Berkas Penuh ↗
-                            </a>
-                            <a href="{{ $downloadUrl }}" class="btn-attachment-action btn-download">
-                                Unduh Dokumen ⤓
-                            </a>
+            @auth
+                @foreach($pemeriksaan->lampiranMcu as $index => $lampiran)
+                    @php
+                        $isPdf = str_ends_with(strtolower((string) $lampiran->path_berkas), '.pdf');
+                        $fileUrl = route('mcu.file.view', ['uuid' => $pemeriksaan->token_verifikasi, 'index' => $index]);
+                        $downloadUrl = route('mcu.file.download', ['uuid' => $pemeriksaan->token_verifikasi, 'index' => $index]);
+                    @endphp
+                    <section class="stacked-section" aria-label="Dokumen Fisik Lampiran MCU">
+                        <div class="stacked-header">
+                            <span class="stacked-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                Lampiran Hasil Pemeriksaan Asli
+                            </span>
+                            <div class="stacked-btn-group">
+                                <a href="{{ $fileUrl }}" target="_blank" rel="noopener noreferrer" class="btn-attachment-action btn-open-full">
+                                    Buka Berkas Penuh ↗
+                                </a>
+                                <a href="{{ $downloadUrl }}" class="btn-attachment-action btn-download">
+                                    Unduh Dokumen ⤓
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="attachment-embed-wrapper">
+                            @if($isPdf)
+                                <iframe 
+                                    src="{{ $fileUrl }}#toolbar=0" 
+                                    class="attachment-iframe" 
+                                    title="Hasil Cetak PDF MCU"
+                                    loading="lazy"
+                                ></iframe>
+                            @else
+                                <img 
+                                    src="{{ $fileUrl }}" 
+                                    alt="Foto Dokumen Hasil Cetak MCU" 
+                                    class="attachment-img"
+                                    loading="lazy"
+                                >
+                            @endif
+                        </div>
+                    </section>
+                @endforeach
+            @else
+                <section class="stacked-section" aria-label="Proteksi Data Medis">
+                    <div style="background-color: var(--color-bg-base); border: 1px solid var(--color-border); border-radius: 8px; padding: 18px 20px; display: flex; align-items: flex-start; gap: 14px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-primary); flex-shrink: 0; margin-top: 2px;" aria-hidden="true">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <div style="font-size: 0.875rem; line-height: 1.5; color: var(--color-text-main);">
+                            <strong style="display: block; font-weight: 700; margin-bottom: 4px; color: var(--color-text-main);">
+                                Perlindungan Dokumen Rekam Medis (UU PDP No. 27/2022)
+                            </strong>
+                            <span>
+                                Terdapat <strong>{{ $pemeriksaan->lampiranMcu->count() }} berkas lampiran</strong> hasil pemeriksaan medis laboratorium/radiologi. Demi melindungi kerahasiaan data kesehatan pasien, akses fisik berkas dibatasi hanya untuk petugas medis dan instansi berwenang yang telah terotentikasi.
+                            </span>
                         </div>
                     </div>
-
-                    <div class="attachment-embed-wrapper">
-                        @if($isPdf)
-                            <iframe 
-                                src="{{ $fileUrl }}#toolbar=0" 
-                                class="attachment-iframe" 
-                                title="Hasil Cetak PDF MCU"
-                                loading="lazy"
-                            ></iframe>
-                        @else
-                            <img 
-                                src="{{ $fileUrl }}" 
-                                alt="Foto Dokumen Hasil Cetak MCU" 
-                                class="attachment-img"
-                                loading="lazy"
-                            >
-                        @endif
-                    </div>
                 </section>
-            @endforeach
+            @endauth
         @endif
     </section>
 

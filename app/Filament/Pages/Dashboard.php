@@ -103,7 +103,8 @@ class Dashboard extends FilamentDashboard
 
     public function getUrlLogAudit(): ?string
     {
-        if (auth()->user()?->isAdministrator()) {
+        $user = auth()->user();
+        if ($user instanceof \App\Models\User && $user->apakahAdministrator()) {
             return LogAuditResource::getUrl('index');
         }
 

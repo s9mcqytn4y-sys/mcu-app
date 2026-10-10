@@ -90,13 +90,18 @@ class SecurityAndDataContractTest extends TestCase
             'ukuran_berkas' => 2048,
         ]);
 
-        // Pengunjung dengan token valid dapat melihat berkas (inline)
-        $viewResponse = $this->get('/v/' . $uuid . '/file/0/view');
+        // 1. Pengunjung anonim/publik DILARANG mengakses berkas fisik lampiran medis (Zero Trust & UU PDP)
+        $this->get('/v/' . $uuid . '/file/0/view')->assertStatus(403);
+        $this->get('/v/' . $uuid . '/file/0/download')->assertStatus(403);
+
+        // 2. Petugas yang terautentikasi dapat melihat dan mengunduh berkas fisik lampiran
+        $user = \App\Models\User::factory()->create();
+
+        $viewResponse = $this->actingAs($user)->get('/v/' . $uuid . '/file/0/view');
         $viewResponse->assertStatus(200);
         $viewResponse->assertHeader('X-Content-Type-Options', 'nosniff');
 
-        // Pengunjung dengan token valid dapat mengunduh berkas
-        $downloadResponse = $this->get('/v/' . $uuid . '/file/0/download');
+        $downloadResponse = $this->actingAs($user)->get('/v/' . $uuid . '/file/0/download');
         $downloadResponse->assertStatus(200);
         $downloadResponse->assertHeader('X-Content-Type-Options', 'nosniff');
 

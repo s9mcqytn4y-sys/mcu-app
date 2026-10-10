@@ -130,16 +130,22 @@ class PemeriksaanMcuResource extends Resource
                                         ToggleButtons::make('status_kelayakan')
                                             ->label('Status Kelayakan (Fitness Status)')
                                             ->options([
-                                                'FIT' => 'FIT (LAYAK KERJA)',
-                                                'UNFIT' => 'UNFIT (TIDAK LAYAK KERJA)',
+                                                'DRAFT' => 'DRAFT',
+                                                'FIT' => 'FIT',
+                                                'UNFIT' => 'UNFIT',
+                                                'DICABUT' => 'DICABUT / DIBATALKAN',
                                             ])
                                             ->colors([
+                                                'DRAFT' => 'gray',
                                                 'FIT' => 'success',
                                                 'UNFIT' => 'danger',
+                                                'DICABUT' => 'warning',
                                             ])
                                             ->icons([
+                                                'DRAFT' => 'heroicon-m-pencil-square',
                                                 'FIT' => 'heroicon-m-check-badge',
                                                 'UNFIT' => 'heroicon-m-x-circle',
+                                                'DICABUT' => 'heroicon-m-no-symbol',
                                             ])
                                             ->inline()
                                             ->required()
@@ -171,7 +177,7 @@ class PemeriksaanMcuResource extends Resource
                                     ->extraAttributes(['class' => 'lg:sticky lg:top-4'])
                                     ->schema([
                                         \Filament\Forms\Components\View::make('filament.components.mcu-live-preview')
-                                            ->viewData(fn (Get $get, ?PemeriksaanMcu $record): array => [
+                                            ->viewData(fn(Get $get, ?PemeriksaanMcu $record): array => [
                                                 'record' => $record,
                                                 'nama' => (string) ($get('nama_pasien') ?: ($record?->pasien?->nama ?? '-')),
                                                 'perusahaan' => (string) ($get('nama_perusahaan') ?: ($record?->nama_perusahaan ?? '-')),
@@ -212,9 +218,11 @@ class PemeriksaanMcuResource extends Resource
                 TextColumn::make('status_kelayakan')
                     ->label('Kelayakan')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         'FIT' => 'success',
                         'UNFIT' => 'danger',
+                        'DRAFT' => 'warning',
+                        'DICABUT' => 'gray',
                         default => 'gray',
                     }),
 
@@ -238,8 +246,10 @@ class PemeriksaanMcuResource extends Resource
                 SelectFilter::make('status_kelayakan')
                     ->label('Kelayakan')
                     ->options([
+                        'DRAFT' => 'DRAFT',
                         'FIT' => 'FIT',
                         'UNFIT' => 'UNFIT',
+                        'DICABUT' => 'DICABUT',
                     ]),
             ])
             ->actions([
@@ -248,7 +258,7 @@ class PemeriksaanMcuResource extends Resource
                         ->label('Buka Portal Publik')
                         ->icon('heroicon-m-arrow-top-right-on-square')
                         ->color('gray')
-                        ->url(fn (PemeriksaanMcu $record): string => route('mcu.verify', ['uuid' => $record->token_verifikasi]))
+                        ->url(fn(PemeriksaanMcu $record): string => route('mcu.verify', ['uuid' => $record->token_verifikasi]))
                         ->openUrlInNewTab(),
 
                     Action::make('unduh_qr_png')
@@ -264,7 +274,7 @@ class PemeriksaanMcuResource extends Resource
                             $filename = "QR-MCU-{$cleanNomor}-{$cleanNama}.png";
 
                             return response()->streamDownload(
-                                fn () => print($png),
+                                fn() => print($png),
                                 $filename,
                                 ['Content-Type' => 'image/png']
                             );
@@ -283,7 +293,7 @@ class PemeriksaanMcuResource extends Resource
                             $filename = "QR-MCU-{$cleanNomor}-{$cleanNama}.svg";
 
                             return response()->streamDownload(
-                                fn () => print($svg),
+                                fn() => print($svg),
                                 $filename,
                                 ['Content-Type' => 'image/svg+xml']
                             );
@@ -300,11 +310,15 @@ class PemeriksaanMcuResource extends Resource
                         ->modalSubmitActionLabel('Ya, Hapus Data')
                         ->modalCancelActionLabel('Batal')
                         ->color('danger')
-                        ->visible(fn (): bool => (\Illuminate\Support\Facades\Auth::user() instanceof \App\Models\User) && \Illuminate\Support\Facades\Auth::user()->isAdministrator()),
+                        ->visible(function (): bool {
+                            /** @var \App\Models\User|null $user */
+                            $user = \Illuminate\Support\Facades\Auth::user();
+                            return $user !== null && $user->apakahAdministrator();
+                        }),
                 ])
-                ->label('Aksi')
-                ->icon('heroicon-m-ellipsis-vertical')
-                ->size('sm'),
+                    ->label('Aksi')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size('sm'),
             ])
             ->bulkActions([
                 DeleteBulkAction::make()
@@ -314,7 +328,11 @@ class PemeriksaanMcuResource extends Resource
                     ->modalDescription('Apakah Anda yakin ingin menghapus data pemeriksaan MCU terpilih? Seluruh berkas lampiran terkait juga akan dihapus secara permanen.')
                     ->modalSubmitActionLabel('Ya, Hapus Semua Terpilih')
                     ->modalCancelActionLabel('Batal')
-                    ->visible(fn (): bool => (\Illuminate\Support\Facades\Auth::user() instanceof \App\Models\User) && \Illuminate\Support\Facades\Auth::user()->isAdministrator()),
+                    ->visible(function (): bool {
+                        /** @var \App\Models\User|null $user */
+                        $user = \Illuminate\Support\Facades\Auth::user();
+                        return $user !== null && $user->apakahAdministrator();
+                    }),
             ]);
     }
 

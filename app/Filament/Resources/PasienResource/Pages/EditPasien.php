@@ -20,7 +20,7 @@ class EditPasien extends EditRecord
                 ->modalDescription('Apakah Anda yakin ingin menghapus data pasien ini? Seluruh data pemeriksaan terkait juga akan terpengaruh.')
                 ->modalSubmitActionLabel('Ya, Hapus Pasien')
                 ->modalCancelActionLabel('Batal')
-                ->visible(fn (): bool => auth()->user()?->isAdministrator() ?? false),
+                ->visible(fn (): bool => ($user = auth()->user()) instanceof \App\Models\User && $user->apakahAdministrator()),
         ];
     }
 

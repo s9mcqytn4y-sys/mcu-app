@@ -79,9 +79,12 @@ class McuViewerController extends Controller
 
     /**
      * Membuka dan menampilkan berkas lampiran langsung di peramban (inline PDF/Gambar) dengan audit log.
+     * Dibatasi hanya untuk petugas terautentikasi sesuai UU Pelindungan Data Pribadi (UU PDP).
      */
     public function viewFile(string $uuid, int $index): BinaryFileResponse
     {
+        abort_unless(auth()->check(), 403, 'Akses berkas lampiran medis dibatasi untuk petugas berwenang sesuai ketentuan UU Pelindungan Data Pribadi (UU PDP).');
+
         [$path, $lampiran, $pemeriksaan] = $this->getAttachmentFilePath($uuid, $index);
         $mimeType = File::mimeType($path) ?: 'application/octet-stream';
         $safeFilename = basename($path);
@@ -106,9 +109,12 @@ class McuViewerController extends Controller
 
     /**
      * Mengunduh berkas fisik lampiran MCU dengan audit log.
+     * Dibatasi hanya untuk petugas terautentikasi sesuai UU Pelindungan Data Pribadi (UU PDP).
      */
     public function downloadFile(string $uuid, int $index): BinaryFileResponse
     {
+        abort_unless(auth()->check(), 403, 'Akses unduh lampiran medis dibatasi untuk petugas berwenang sesuai ketentuan UU Pelindungan Data Pribadi (UU PDP).');
+
         [$path, $lampiran, $pemeriksaan] = $this->getAttachmentFilePath($uuid, $index);
         $safeFilename = basename($path);
 

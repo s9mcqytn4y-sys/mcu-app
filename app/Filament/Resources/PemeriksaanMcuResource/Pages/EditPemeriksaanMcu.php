@@ -22,7 +22,11 @@ class EditPemeriksaanMcu extends EditRecord
                 ->modalDescription('Apakah Anda yakin ingin menghapus data pemeriksaan MCU ini? Tindakan ini tidak dapat dibatalkan.')
                 ->modalSubmitActionLabel('Ya, Hapus Data')
                 ->modalCancelActionLabel('Batal')
-                ->visible(fn (): bool => (\Illuminate\Support\Facades\Auth::user() instanceof \App\Models\User) && \Illuminate\Support\Facades\Auth::user()->isAdministrator()),
+                ->visible(function (): bool {
+                    /** @var \App\Models\User|null $user */
+                    $user = \Illuminate\Support\Facades\Auth::user();
+                    return $user !== null && $user->apakahAdministrator();
+                }),
         ];
     }
 

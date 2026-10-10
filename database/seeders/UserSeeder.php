@@ -20,14 +20,14 @@ class UserSeeder extends Seeder
             return;
         }
 
-        // 1. Akun Pengguna Wira (Satu-satunya akun default: Administrator & Penanggung Jawab Sistem)
-        User::updateOrCreate(
+        // 1. Akun Pengguna Wira (Administrator awal development/staging - tidak mereset password yang sudah ada)
+        User::firstOrCreate(
             ['username' => 'wira'],
             [
                 'name' => 'Wira Pramudya',
                 'email' => 'wirapramudya2q@gmail.com',
                 'peran' => 'administrator',
-                'password' => Hash::make('Wrprmdy13'),
+                'password' => Hash::make(env('INITIAL_ADMIN_PASSWORD', 'Wrprmdy13')),
                 'aktif' => true,
                 'email_verified_at' => now(),
             ]

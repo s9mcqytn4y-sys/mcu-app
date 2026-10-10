@@ -18,16 +18,22 @@
     $statusColor = match($statusUpper) {
         'FIT' => '#15803d',
         'UNFIT' => '#b45343',
+        'DRAFT' => '#b45309',
+        'DICABUT' => '#475569',
         default => '#475569',
     };
     $statusBg = match($statusUpper) {
         'FIT' => '#dcfce7',
         'UNFIT' => '#fee2e2',
+        'DRAFT' => '#fef3c7',
+        'DICABUT' => '#f1f5f9',
         default => '#f1f5f9',
     };
     $statusLabel = match($statusUpper) {
         'FIT' => 'FIT',
         'UNFIT' => 'UNFIT',
+        'DRAFT' => 'DRAFT',
+        'DICABUT' => 'DICABUT',
         default => 'BELUM DITENTUKAN',
     };
 @endphp
