@@ -29,6 +29,7 @@ class LampiranMcu extends Model
         'tipe_mime',
         'ukuran_berkas',
         'jenis_lampiran',
+        'tipe_lampiran',
         'hash_sha256',
         'diunggah_oleh',
     ];
@@ -43,6 +44,22 @@ class LampiranMcu extends Model
         return [
             'ukuran_berkas' => 'integer',
         ];
+    }
+
+    /**
+     * Accessor alias untuk jenis_lampiran.
+     */
+    public function getTipeLampiranAttribute(): ?string
+    {
+        return $this->attributes['jenis_lampiran'] ?? null;
+    }
+
+    /**
+     * Mutator alias untuk jenis_lampiran.
+     */
+    public function setTipeLampiranAttribute(mixed $value): void
+    {
+        $this->attributes['jenis_lampiran'] = $value;
     }
 
     /**

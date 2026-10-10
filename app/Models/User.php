@@ -71,6 +71,14 @@ class User extends Authenticatable implements FilamentUser
      */
     public function isAdministrator(): bool
     {
+        return $this->apakahAdministrator();
+    }
+
+    /**
+     * Memeriksa apakah pengguna memiliki peran administrator (konvensi Bahasa Indonesia).
+     */
+    public function apakahAdministrator(): bool
+    {
         return $this->peran === 'administrator';
     }
 
@@ -78,6 +86,14 @@ class User extends Authenticatable implements FilamentUser
      * Memeriksa apakah pengguna memiliki peran staf.
      */
     public function isStaf(): bool
+    {
+        return $this->apakahStaf();
+    }
+
+    /**
+     * Memeriksa apakah pengguna memiliki peran staf (konvensi Bahasa Indonesia).
+     */
+    public function apakahStaf(): bool
     {
         return $this->peran === 'staf';
     }

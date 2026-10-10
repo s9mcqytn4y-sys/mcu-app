@@ -58,24 +58,55 @@ class LogAudit extends Model
 
     /**
      * Helper statis untuk mencatat entri log audit secara konsisten.
+     * Mendukung pemanggilan tradisional maupun named arguments (aksi, model).
      *
      * @param array<string, mixed>|null $rincian
      */
     public static function rekam(
-        string $tindakan,
-        ?string $tipeModel = null,
+        string $tindakan = '',
+        string|Model|null $tipeModel = null,
         ?int $idModel = null,
         ?array $rincian = null,
-        ?int $idPengguna = null
+        ?int $idPengguna = null,
+        ?string $aksi = null,
+        ?Model $model = null
     ): self {
+        $tindakanFinal = $aksi ?? $tindakan;
+
+        $targetModel = $model ?? ($tipeModel instanceof Model ? $tipeModel : null);
+        $tipeModelFinal = $targetModel ? get_class($targetModel) : (is_string($tipeModel) ? $tipeModel : null);
+        $idModelFinal = $targetModel ? (int) $targetModel->getKey() : $idModel;
+
         return self::create([
             'id_pengguna' => $idPengguna ?? Auth::id(),
-            'tindakan' => $tindakan,
-            'tipe_model' => $tipeModel,
-            'id_model' => $idModel,
+            'tindakan' => $tindakanFinal,
+            'tipe_model' => $tipeModelFinal,
+            'id_model' => $idModelFinal,
             'alamat_ip' => Request::ip() ?? '127.0.0.1',
             'agen_pengguna' => substr(Request::userAgent() ?? 'CLI/System', 0, 500),
             'rincian' => $rincian,
         ]);
+    }
+
+    /**
+     * Helper baru yang direkomendasikan dengan kontrak eksplisit.
+     *
+     * @param array<string, mixed> $rincian
+     */
+    public static function catat(
+        string $tindakan,
+        Model|string|null $model = null,
+        ?int $idModel = null,
+        array $rincian = [],
+        ?int $idPengguna = null
+    ): self {
+        return self::rekam(
+            tindakan: $tindakan,
+            tipeModel: is_string($model) ? $model : null,
+            idModel: $idModel,
+            rincian: $rincian,
+            idPengguna: $idPengguna,
+            model: $model instanceof Model ? $model : null
+        );
     }
 }

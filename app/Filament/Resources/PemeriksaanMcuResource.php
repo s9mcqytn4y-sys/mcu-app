@@ -56,13 +56,13 @@ class PemeriksaanMcuResource extends Resource
                         ]),
 
                         Grid::make(2)->schema([
-                            DatePicker::make('tanggal_pemeriksaan')
+                            DatePicker::make('tanggal_periksa')
                                 ->label('Tanggal MCU')
                                 ->required()
                                 ->default(now()->toDateString())
                                 ->native(false),
 
-                            DatePicker::make('tanggal_kedaluwarsa')
+                            DatePicker::make('berlaku_sampai')
                                 ->label('Berlaku Sampai')
                                 ->required()
                                 ->default(now()->addYears(2)->toDateString())
@@ -124,12 +124,12 @@ class PemeriksaanMcuResource extends Resource
                         default => 'gray',
                     }),
 
-                TextColumn::make('tanggal_pemeriksaan')
+                TextColumn::make('tanggal_periksa')
                     ->label('Tanggal MCU')
                     ->date('d M Y')
                     ->sortable(),
 
-                TextColumn::make('tanggal_kedaluwarsa')
+                TextColumn::make('berlaku_sampai')
                     ->label('Berlaku Hingga')
                     ->date('d M Y')
                     ->sortable(),

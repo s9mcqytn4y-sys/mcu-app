@@ -15,8 +15,13 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Proteksi P0: Dilarang keras mengeksekusi seeder akun default pada environment produksi!
+        if (app()->isProduction()) {
+            return;
+        }
+
         // 1. Akun Pengguna Wira (Staff Senior & Administrator)
-        User::updateOrCreate(
+        User::firstOrCreate(
             ['username' => 'wira'],
             [
                 'name' => 'Wira',
@@ -28,7 +33,7 @@ class UserSeeder extends Seeder
         );
 
         // 2. Akun Utama Administrator Indosehat
-        User::updateOrCreate(
+        User::firstOrCreate(
             ['username' => 'admin'],
             [
                 'name' => 'Administrator Indosehat',
@@ -40,7 +45,7 @@ class UserSeeder extends Seeder
         );
 
         // 3. Akun Staf Pelaksana MCU
-        User::updateOrCreate(
+        User::firstOrCreate(
             ['username' => 'staff'],
             [
                 'name' => 'Staf Pelaksana MCU',

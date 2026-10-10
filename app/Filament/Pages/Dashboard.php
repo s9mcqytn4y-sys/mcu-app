@@ -38,8 +38,13 @@ use Illuminate\Support\Str;
 class Dashboard extends FilamentDashboard
 {
     protected static ?string $navigationIcon = 'heroicon-o-qr-code';
-    protected static ?string $title = 'Halo, Mas Wira! 👋';
     protected static ?string $navigationLabel = 'Generator MCU';
+
+    public function getTitle(): string
+    {
+        $nama = Auth::user()?->name ?? 'Operator';
+        return "Halo, {$nama}! 👋";
+    }
 
     protected static string $view = 'filament.pages.dashboard';
 
@@ -73,8 +78,7 @@ class Dashboard extends FilamentDashboard
                                     ->label('Nama Lengkap (Full Name)')
                                     ->required()
                                     ->maxLength(255)
-                                    ->live(debounce: 500)
-                                    ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                    ->live(debounce: 500),
 
                                 Grid::make(2)->schema([
                                     Select::make('jenis_kelamin')
@@ -84,55 +88,41 @@ class Dashboard extends FilamentDashboard
                                             'Perempuan' => 'Perempuan (Female)',
                                         ])
                                         ->required()
-                                        ->native(false)
-                                        ->live()
-                                        ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                        ->native(false),
 
                                     DatePicker::make('tanggal_lahir')
                                         ->label('Tanggal Lahir (Date of Birth)')
                                         ->required()
                                         ->maxDate(now())
-                                        ->native(false)
-                                        ->live()
-                                        ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                        ->native(false),
                                 ]),
 
                                 Grid::make(2)->schema([
                                     TextInput::make('no_ktp')
                                         ->label('Nomor KTP / NIK (National ID)')
-                                        ->maxLength(30)
-                                        ->live(debounce: 500)
-                                        ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                        ->maxLength(30),
 
                                     TextInput::make('no_paspor')
                                         ->label('Nomor Paspor (Passport) - Opsional')
-                                        ->maxLength(30)
-                                        ->live(debounce: 500)
-                                        ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                        ->maxLength(30),
                                 ]),
 
                                 TextInput::make('nama_perusahaan')
                                     ->label('Perusahaan / Instansi (Company)')
-                                    ->maxLength(255)
-                                    ->live(debounce: 500)
-                                    ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                    ->maxLength(255),
 
                                 Grid::make(2)->schema([
                                     DatePicker::make('tanggal_pemeriksaan')
                                         ->label('Tanggal Pemeriksaan MCU')
                                         ->default(now()->toDateString())
                                         ->required()
-                                        ->native(false)
-                                        ->live()
-                                        ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                        ->native(false),
 
                                     DatePicker::make('tanggal_kedaluwarsa')
                                         ->label('Berlaku Sampai (Valid Until)')
                                         ->default(now()->addYears(2)->toDateString())
                                         ->required()
-                                        ->native(false)
-                                        ->live()
-                                        ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                        ->native(false),
                                 ]),
 
                                 ToggleButtons::make('status_kelayakan')
@@ -151,9 +141,7 @@ class Dashboard extends FilamentDashboard
                                     ])
                                     ->inline()
                                     ->default('FIT')
-                                    ->required()
-                                    ->live()
-                                    ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                    ->required(),
                             ]),
 
                         Section::make('2. Berkas Lampiran MCU (PDF / Gambar Medis)')
@@ -166,9 +154,7 @@ class Dashboard extends FilamentDashboard
                                     ->directory('lampiran-mcu/temp')
                                     ->multiple()
                                     ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png', 'image/webp'])
-                                    ->maxSize(15360) // 15 MB
-                                    ->live(debounce: 500)
-                                    ->afterStateUpdated(fn ($state, $livewire) => $livewire->syncArchiveToDatabase()),
+                                    ->maxSize(15360), // 15 MB
                             ]),
                     ])->columnSpan(['default' => 12, 'lg' => 8]),
 
@@ -305,8 +291,8 @@ class Dashboard extends FilamentDashboard
 
             $dataPemeriksaan = [
                 'pasien_id' => $pasien->id,
-                'tanggal_pemeriksaan' => $state['tanggal_pemeriksaan'] ?? now()->toDateString(),
-                'tanggal_kedaluwarsa' => $state['tanggal_kedaluwarsa'] ?? null,
+                'tanggal_periksa' => $state['tanggal_pemeriksaan'] ?? $state['tanggal_periksa'] ?? now()->toDateString(),
+                'berlaku_sampai' => $state['tanggal_kedaluwarsa'] ?? $state['berlaku_sampai'] ?? null,
                 'nama_perusahaan' => $state['nama_perusahaan'] ?? null,
                 'status_kelayakan' => $statusKelayakan,
                 'token_verifikasi' => $this->activeUuid,
@@ -314,9 +300,7 @@ class Dashboard extends FilamentDashboard
             ];
 
             if (!$pemeriksaan) {
-                $tahunMcu = date('Y');
-                $jumlahMcu = PemeriksaanMcu::whereYear('created_at', $tahunMcu)->count() + 1;
-                $dataPemeriksaan['nomor_mcu'] = sprintf('%04d/MCU-KIS/%s', $jumlahMcu, $tahunMcu);
+                $dataPemeriksaan['nomor_mcu'] = app(\App\Actions\Mcu\GenerateNomorMcuAction::class)->execute((int) date('Y'));
                 $pemeriksaan = PemeriksaanMcu::create($dataPemeriksaan);
 
                 LogAudit::rekam(
@@ -380,7 +364,7 @@ class Dashboard extends FilamentDashboard
                                 'nama_berkas' => basename($pathPermanen),
                                 'tipe_mime' => $tipeMime,
                                 'ukuran_berkas' => $ukuranBerkas,
-                                'tipe_lampiran' => str_contains($tipeMime, 'image') ? 'hasil_laboratorium' : 'sertifikat',
+                                'jenis_lampiran' => str_contains($tipeMime, 'image') ? 'hasil_laboratorium' : 'sertifikat',
                                 'hash_sha256' => $hashSha256,
                                 'diunggah_oleh' => Auth::id() ?? 1,
                             ]
@@ -396,12 +380,12 @@ class Dashboard extends FilamentDashboard
         $state = $this->form->getState();
 
         if (empty($state['nama_pasien'])) {
-            Notification::make()->title('Gagal: Mas Wira belum mengisi Nama Pasien!')->danger()->send();
+            Notification::make()->title('Gagal: Nama Pasien wajib diisi terlebih dahulu!')->danger()->send();
             return null;
         }
 
         try {
-            // Pastikan data tersimpan
+            // Pastikan data tersimpan secara atomik saat unduh ditekan
             $this->syncArchiveToDatabase();
 
             $urlTujuan = route('mcu.verify', ['uuid' => $this->activeUuid]);
@@ -432,7 +416,7 @@ class Dashboard extends FilamentDashboard
                 'tanggal_kedaluwarsa' => now()->addYears(2)->toDateString(),
             ]);
 
-            Notification::make()->title('Mantap Mas Wira! QR Code Berhasil Dibuat dan Diunduh!')->success()->send();
+            Notification::make()->title("Sertifikat MCU untuk {$state['nama_pasien']} berhasil diterbitkan.")->success()->send();
 
             return response()->streamDownload(fn () => print($qrContent), $namaFileUnduhan);
         } catch (\Throwable $e) {
