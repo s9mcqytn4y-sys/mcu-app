@@ -44,3 +44,23 @@ jobs:
 
     - name: Execute Tests via PHPUnit / Pest
       run: php artisan test --colors=always
+
+  deploy-hpanel:
+    name: Deploy to Hostinger Cloud (hPanel)
+    needs: laravel-tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Hostinger Git Auto-Deploy Webhook
+        env:
+          HOSTINGER_WEBHOOK_URL: ${{ secrets.HOSTINGER_WEBHOOK_URL }}
+        run: |
+          if [ -z "$HOSTINGER_WEBHOOK_URL" ]; then
+            echo "HOSTINGER_WEBHOOK_URL secret is not yet configured in GitHub Secrets."
+            echo "Deployment step skipped safely until the secret is populated."
+          else
+            echo "Triggering Hostinger hPanel Git Auto-Deploy..."
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$HOSTINGER_WEBHOOK_URL")
+            echo "Hostinger Auto-Deploy Webhook returned HTTP $HTTP_STATUS."
+          fi
+
