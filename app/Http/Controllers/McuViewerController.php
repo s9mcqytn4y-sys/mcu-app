@@ -27,15 +27,14 @@ class McuViewerController extends Controller
             return response()->view('errors.invalid-qr', [], 404);
         }
 
-        // Rekam audit log akses publik hasil MCU untuk compliance dan tracking
+        // Rekam audit log akses publik hasil MCU dengan metadata minimum tanpa PII mentah
         LogAudit::rekam(
             tindakan: 'AKSES_VERIFIKASI_MCU',
             tipeModel: PemeriksaanMcu::class,
             idModel: $pemeriksaan->id,
             rincian: [
-                'token' => $uuid,
                 'nomor_mcu' => $pemeriksaan->nomor_mcu,
-                'pasien' => $pemeriksaan->pasien->nama,
+                'status' => 'TERVERIFIKASI',
             ]
         );
 
@@ -48,6 +47,11 @@ class McuViewerController extends Controller
      */
     protected function getAttachmentFilePath(string $uuid, int $index): array
     {
+        // Proteksi Otorisasi Dokumen Medis: Akses berkas rekam medis dibatasi hanya untuk staf berwenang
+        if (! auth()->check()) {
+            abort(403, 'Akses berkas fisik dibatasi hanya untuk staf klinik berwenang.');
+        }
+
         $pemeriksaan = PemeriksaanMcu::with(['pasien', 'lampiranMcu'])
             ->where('token_verifikasi', $uuid)
             ->firstOrFail();
@@ -92,7 +96,6 @@ class McuViewerController extends Controller
             tipeModel: PemeriksaanMcu::class,
             idModel: $pemeriksaan->id,
             rincian: [
-                'token' => $uuid,
                 'nomor_mcu' => $pemeriksaan->nomor_mcu,
                 'lampiran_id' => $lampiran->id,
                 'nama_berkas' => $lampiran->nama_berkas ?? $safeFilename,
@@ -119,7 +122,6 @@ class McuViewerController extends Controller
             tipeModel: PemeriksaanMcu::class,
             idModel: $pemeriksaan->id,
             rincian: [
-                'token' => $uuid,
                 'nomor_mcu' => $pemeriksaan->nomor_mcu,
                 'lampiran_id' => $lampiran->id,
                 'nama_berkas' => $lampiran->nama_berkas ?? $safeFilename,

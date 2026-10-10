@@ -5,30 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Tag Meta Utama -->
-    <title>Sertifikat Hasil MCU - {{ $pemeriksaan->pasien->nama ?? 'Pasien' }} | Klinik Indosehat 2003</title>
-    <meta name="title" content="Sertifikat Hasil MCU - {{ $pemeriksaan->pasien->nama ?? 'Pasien' }}">
-    <meta name="description" content="Verifikasi resmi sertifikat Medical Check-Up untuk {{ $pemeriksaan->pasien->nama ?? 'Pasien' }} yang diterbitkan oleh Klinik Indosehat 2003.">
+    <title>Verifikasi Sertifikat MCU | Klinik Indosehat 2003</title>
+    <meta name="title" content="Verifikasi Sertifikat MCU | Klinik Indosehat 2003">
+    <meta name="description" content="Portal Verifikasi Resmi Sertifikat Medical Check-Up Klinik Indosehat 2003.">
     
     <!-- Privasi & Penolakan Indeks Mesin Pencari -->
     <meta name="robots" content="noindex, nofollow, noarchive">
     
-    <!-- Open Graph / WhatsApp / Facebook -->
+    <!-- Open Graph / WhatsApp / Facebook (Data Minimization) -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Sertifikat Hasil MCU - {{ $pemeriksaan->pasien->nama ?? 'Pasien' }}">
-    <meta property="og:description" content="Verifikasi resmi sertifikat Medical Check-Up untuk {{ $pemeriksaan->pasien->nama ?? 'Pasien' }} yang diterbitkan oleh Klinik Indosehat 2003.">
+    <meta property="og:title" content="Verifikasi Sertifikat MCU | Klinik Indosehat 2003">
+    <meta property="og:description" content="Portal Verifikasi Resmi Sertifikat Medical Check-Up Klinik Indosehat 2003.">
     <meta property="og:image" content="{{ asset('images/logo/logo-klinik-indosehat-2003.png') }}">
     <meta property="og:site_name" content="Klinik Indosehat 2003">
 
     <!-- Twitter Card -->
     <meta property="twitter:card" content="summary">
-    <meta property="twitter:title" content="Sertifikat Hasil MCU - {{ $pemeriksaan->pasien->nama ?? 'Pasien' }}">
-    <meta property="twitter:description" content="Verifikasi resmi sertifikat Medical Check-Up untuk {{ $pemeriksaan->pasien->nama ?? 'Pasien' }} yang diterbitkan oleh Klinik Indosehat 2003.">
+    <meta property="twitter:title" content="Verifikasi Sertifikat MCU | Klinik Indosehat 2003">
+    <meta property="twitter:description" content="Portal Verifikasi Resmi Sertifikat Medical Check-Up Klinik Indosehat 2003.">
     <meta property="twitter:image" content="{{ asset('images/logo/logo-klinik-indosehat-2003.png') }}">
 
-    <!-- Favicon -->
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    <link rel="alternate icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
-    <link rel="apple-touch-icon" href="{{ asset('images/logo/logo-indosehat-mark.svg') }}">
+    <!-- Favicon & Icons Otentik -->
+    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
     
     <!-- Tipografi Modern -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -344,14 +345,10 @@
     <!-- Header Identitas Fasilitas Kesehatan -->
     <header class="header-brand">
         <img 
-            src="{{ asset('images/logo/logo-indosehat-horizontal.svg') }}" 
+            src="{{ asset('images/logo/logo-indosehat-horizontal.png') }}" 
             alt="Klinik Indosehat 2003"
             onerror="this.onerror=null; this.src='{{ asset('images/logo/logo-klinik-indosehat-2003.png') }}';"
         >
-        <div class="verification-badge-container" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; padding: 4px 12px; background: rgba(7, 46, 109, 0.04); border: 1px solid rgba(7, 46, 109, 0.12); border-radius: 9999px;">
-            <img src="{{ asset('images/badges/badge-terverifikasi-mcu.svg') }}" alt="Verifikasi Resmi Indosehat" style="width: 20px; height: 20px;" />
-            <span style="font-size: 0.75rem; font-weight: 700; color: #072E6D; letter-spacing: 0.05em; text-transform: uppercase;">Terverifikasi Resmi Digital</span>
-        </div>
         <h1 class="page-title">Sertifikat Hasil Medical Check-Up</h1>
         <p class="page-subtitle">Electronic Verification System</p>
     </header>
@@ -397,14 +394,14 @@
                     </tr>
                     <tr>
                         <td class="label-col">
-                            <span class="label-id">Tanggal Lahir</span>
-                            <span class="label-en">Date of Birth</span>
+                            <span class="label-id">Tahun Lahir</span>
+                            <span class="label-en">Year of Birth</span>
                         </td>
                         <td class="colon-col">:</td>
                         <td class="value-col">
                             @if($pemeriksaan->pasien->tanggal_lahir)
-                                <time datetime="{{ $pemeriksaan->pasien->tanggal_lahir->format('Y-m-d') }}">
-                                    {{ $pemeriksaan->pasien->tanggal_lahir->format('d F Y') }}
+                                <time datetime="{{ $pemeriksaan->pasien->tanggal_lahir->format('Y') }}">
+                                    Tahun {{ $pemeriksaan->pasien->tanggal_lahir->format('Y') }}
                                 </time>
                             @else
                                 -
@@ -417,7 +414,19 @@
                             <span class="label-en">ID Card Number</span>
                         </td>
                         <td class="colon-col">:</td>
-                        <td class="value-col">{{ $pemeriksaan->pasien->no_ktp ?? '-' }}</td>
+                        <td class="value-col">
+                            @php
+                                $rawKtp = (string) ($pemeriksaan->pasien->no_ktp ?? '');
+                                if (strlen($rawKtp) >= 10) {
+                                    $maskedKtp = substr($rawKtp, 0, 6) . str_repeat('*', max(0, strlen($rawKtp) - 10)) . substr($rawKtp, -4);
+                                } elseif (strlen($rawKtp) > 4) {
+                                    $maskedKtp = substr($rawKtp, 0, 2) . str_repeat('*', strlen($rawKtp) - 4) . substr($rawKtp, -2);
+                                } else {
+                                    $maskedKtp = $rawKtp ?: '-';
+                                }
+                            @endphp
+                            {{ $maskedKtp }}
+                        </td>
                     </tr>
                     <tr>
                         <td class="label-col">
@@ -425,7 +434,17 @@
                             <span class="label-en">Passport Number</span>
                         </td>
                         <td class="colon-col">:</td>
-                        <td class="value-col">{{ $pemeriksaan->pasien->no_paspor ?? '-' }}</td>
+                        <td class="value-col">
+                            @php
+                                $rawPaspor = (string) ($pemeriksaan->pasien->no_paspor ?? '');
+                                if (strlen($rawPaspor) >= 4) {
+                                    $maskedPaspor = substr($rawPaspor, 0, 3) . str_repeat('*', strlen($rawPaspor) - 3);
+                                } else {
+                                    $maskedPaspor = $rawPaspor ?: '-';
+                                }
+                            @endphp
+                            {{ $maskedPaspor }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -451,7 +470,7 @@
             @php
                 $statusUpper = strtoupper((string) ($pemeriksaan->status_kelayakan ?? ''));
                 $badgeClass = match($statusUpper) {
-                    'FIT' => 'badge-fit',
+                    'FIT', 'FIT FOR SEA DUTY' => 'badge-fit',
                     'UNFIT' => 'badge-unfit',
                     default => 'badge-custom'
                 };
@@ -466,42 +485,40 @@
             @endif
         </article>
 
-        <!-- Bagian Unduh / Pratinjau Dokumen -->
-        @if($pemeriksaan->lampiranMcu && $pemeriksaan->lampiranMcu->isNotEmpty())
-            <section class="attachments-section" aria-label="Berkas Lampiran Hasil MCU">
-                <div class="attachments-desc">
-                    Tekan tombol di bawah untuk melihat atau mengunduh berkas fisik sertifikat <strong>Medical Check Up</strong>:<br>
-                    <em>Click the button below to view or download the physical <strong>Medical Check Up</strong> certificate file:</em>
+        <!-- Bagian Status Berkas Lampiran & Proteksi Rekam Medis (UU PDP & Permenkes) -->
+        <section class="attachments-section" aria-label="Keamanan Dokumen Hasil MCU">
+            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 20px; text-align: left;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007F94" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span style="font-weight: 700; font-size: 0.9rem; color: #16364A;">Arsip Rekam Medis Terproteksi</span>
                 </div>
+                <p style="margin: 0; font-size: 0.8rem; color: #64748b; line-height: 1.5;">
+                    Sesuai UU PDP No. 27/2022 dan Permenkes No. 24/2022 tentang Rekam Medis, berkas fisik hasil pemeriksaan disimpan dalam repositori terenkripsi dan hanya dapat diakses oleh petugas medis berwenang.
+                </p>
+            </div>
 
-                <div class="btn-action-group">
-                    @foreach($pemeriksaan->lampiranMcu as $index => $lampiran)
-                        @php
-                            $namaLabel = $pemeriksaan->lampiranMcu->count() > 1 ? ' (' . ($index + 1) . ')' : '';
-                        @endphp
-                        <a 
-                            href="{{ route('mcu.file.download', ['uuid' => $pemeriksaan->token_verifikasi, 'index' => $index]) }}" 
-                            class="btn-attachment"
-                            download
-                            aria-label="Unduh berkas hasil MCU lampiran {{ $index + 1 }}"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                            UNDUH / DOWNLOAD{{ $namaLabel }}
-                        </a>
-                        <a 
-                            href="{{ route('mcu.file.view', ['uuid' => $pemeriksaan->token_verifikasi, 'index' => $index]) }}" 
-                            class="btn-attachment btn-preview"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label="Lihat langsung berkas hasil MCU lampiran {{ $index + 1 }}"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            LIHAT DOKUMEN / VIEW{{ $namaLabel }}
-                        </a>
-                    @endforeach
-                </div>
-            </section>
-        @endif
+            @auth
+                @if($pemeriksaan->lampiranMcu && $pemeriksaan->lampiranMcu->isNotEmpty())
+                    <div class="btn-action-group">
+                        @foreach($pemeriksaan->lampiranMcu as $index => $lampiran)
+                            @php
+                                $namaLabel = $pemeriksaan->lampiranMcu->count() > 1 ? ' (' . ($index + 1) . ')' : '';
+                            @endphp
+                            <a 
+                                href="{{ route('mcu.file.view', ['uuid' => $pemeriksaan->token_verifikasi, 'index' => $index]) }}" 
+                                class="btn-attachment btn-preview"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label="Akses internal berkas MCU lampiran {{ $index + 1 }}"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                AKSES BERKAS PETUGAS{{ $namaLabel }}
+                            </a>
+                        @endforeach
+                    </div>
+                @endif
+            @endauth
+        </section>
 
         <!-- Masa Berlaku Dokumen -->
         <aside class="validity-box" aria-label="Masa Berlaku Sertifikat">

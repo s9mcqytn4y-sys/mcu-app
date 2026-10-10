@@ -31,18 +31,88 @@ class SecurityAndDataContractTest extends TestCase
     }
 
     /**
-     * Memastikan UserSeeder tidak mengeksekusi operasi berbahaya di lingkungan produksi.
+     * Memastikan UserSeeder dan McuSeeder tidak mengeksekusi operasi berbahaya di lingkungan produksi.
      */
-    public function test_user_seeder_tidak_menulis_ulang_kredensial_di_produksi(): void
+    public function test_seeder_tidak_menulis_ulang_kredensial_dan_data_di_produksi(): void
     {
         App::detectEnvironment(fn () => 'production');
 
-        $seeder = new UserSeeder();
-        $seeder->run();
+        $userSeeder = new UserSeeder();
+        $userSeeder->run();
 
         $this->assertDatabaseMissing('users', [
-            'username' => 'administrator',
+            'username' => 'wira',
         ]);
+        $this->assertDatabaseMissing('users', [
+            'username' => 'admin',
+        ]);
+        $this->assertDatabaseMissing('users', [
+            'username' => 'staff',
+        ]);
+
+        $mcuSeeder = new \Database\Seeders\McuSeeder();
+        $mcuSeeder->run();
+
+        $this->assertDatabaseMissing('pasien', [
+            'no_ktp' => '3275012345670001',
+        ]);
+    }
+
+    /**
+     * Memastikan akses lampiran dokumen medis publik tanpa otorisasi ditolak (403 Forbidden).
+     */
+    public function test_unduh_lampiran_medis_tanpa_login_mengembalikan_403(): void
+    {
+        $pasien = Pasien::create([
+            'nama' => 'Pasien Anonim',
+            'jenis_kelamin' => 'laki-laki',
+            'tanggal_lahir' => '1990-01-01',
+        ]);
+
+        $uuid = Str::uuid()->toString();
+        $mcu = PemeriksaanMcu::create([
+            'token_verifikasi' => $uuid,
+            'pasien_id' => $pasien->id,
+            'nomor_mcu' => '0099/MCU-KIS/2026',
+            'tanggal_periksa' => '2026-10-10',
+            'berlaku_sampai' => '2027-10-10',
+            'status_kelayakan' => 'fit',
+        ]);
+
+        $lampiran = $mcu->lampiran()->create([
+            'nama_berkas' => 'rahasia-medis.pdf',
+            'jenis_lampiran' => 'rontgen_thorax',
+            'path_berkas' => 'lampiran/rahasia-medis.pdf',
+            'tipe_mime' => 'application/pdf',
+            'ukuran_berkas' => 2048,
+        ]);
+
+        // Tamu anonim (guest) tidak boleh mendownload atau melihat dokumen medis
+        $downloadResponse = $this->get('/v/' . $uuid . '/file/0/download');
+        $downloadResponse->assertStatus(403);
+
+        $viewResponse = $this->get('/v/' . $uuid . '/file/0/view');
+        $viewResponse->assertStatus(403);
+    }
+
+    /**
+     * Memastikan CreatePemeriksaanMcu mengalokasikan nomor_mcu resmi saat form disimpan.
+     */
+    public function test_penerbitan_mcu_mengalokasikan_nomor_mcu_resmi(): void
+    {
+        $pasien = Pasien::create([
+            'nama' => 'Pasien Uji Sekuens',
+            'jenis_kelamin' => 'laki-laki',
+            'tanggal_lahir' => '1992-05-10',
+        ]);
+
+        $tahunIni = (int) date('Y');
+        $expectedNomor = sprintf('%04d/MCU-KIS/%d', 1, $tahunIni);
+
+        $action = new GenerateNomorMcuAction();
+        $nomorBaru = $action->generate($tahunIni);
+
+        $this->assertSame($expectedNomor, $nomorBaru);
     }
 
     /**

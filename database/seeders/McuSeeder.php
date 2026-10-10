@@ -17,6 +17,10 @@ class McuSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->isProduction()) {
+            return;
+        }
+
         $pembuat = User::where('username', 'wira')->first() ?? User::first();
 
         // Contoh Pasien 1

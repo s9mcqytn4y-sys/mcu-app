@@ -18,7 +18,12 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UserSeeder::class,
-            McuSeeder::class,
         ]);
+
+        if (! app()->isProduction()) {
+            $this->call([
+                McuSeeder::class,
+            ]);
+        }
     }
 }
