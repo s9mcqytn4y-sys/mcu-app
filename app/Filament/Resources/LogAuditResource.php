@@ -11,6 +11,11 @@ use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\Grid as InfolistGrid;
+use Filament\Infolists\Components\KeyValueEntry;
+use Filament\Infolists\Components\Section as InfolistSection;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -40,35 +45,106 @@ class LogAuditResource extends Resource
         return false;
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                InfolistSection::make('Rincian Log Audit Keamanan')
+                    ->description('Catatan audit immutable aktivitas dan interaksi sistem.')
+                    ->icon('heroicon-o-shield-check')
+                    ->schema([
+                        InfolistGrid::make(['default' => 1, 'md' => 3])
+                            ->schema([
+                                TextEntry::make('created_at')
+                                    ->label('Waktu Kejadian')
+                                    ->dateTime('d F Y, H:i:s')
+                                    ->icon('heroicon-o-clock'),
+
+                                TextEntry::make('pengguna.name')
+                                    ->label('Pengguna (User)')
+                                    ->placeholder('Sistem / Publik')
+                                    ->icon('heroicon-o-user'),
+
+                                TextEntry::make('tindakan')
+                                    ->label('Tindakan Operasi')
+                                    ->badge()
+                                    ->color(fn (string $state): string => match ($state) {
+                                        'pemeriksaan_mcu_dibuat' => 'success',
+                                        'pemeriksaan_mcu_diperbarui' => 'warning',
+                                        'AKSES_VERIFIKASI_MCU', 'portal_mcu_diverifikasi' => 'info',
+                                        'lampiran_mcu_diunduh' => 'primary',
+                                        default => 'gray',
+                                    }),
+                            ]),
+
+                        InfolistGrid::make(['default' => 1, 'md' => 3])
+                            ->schema([
+                                TextEntry::make('tipe_model')
+                                    ->label('Tipe Entitas')
+                                    ->copyable()
+                                    ->badge()
+                                    ->color('gray'),
+
+                                TextEntry::make('id_model')
+                                    ->label('ID Entitas Terkait')
+                                    ->copyable()
+                                    ->placeholder('-'),
+
+                                TextEntry::make('alamat_ip')
+                                    ->label('Alamat IP')
+                                    ->icon('heroicon-o-globe-alt')
+                                    ->copyable(),
+                            ]),
+
+                        TextEntry::make('agen_pengguna')
+                            ->label('Peramban (User Agent)')
+                            ->columnSpanFull()
+                            ->copyable(),
+
+                        KeyValueEntry::make('rincian')
+                            ->label('Metadata Rincian')
+                            ->columnSpanFull(),
+                    ]),
+            ]);
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Section::make('Rincian Log Audit Keamanan')
                     ->description('Catatan audit immutable aktivitas pengguna.')
+                    ->columns(['default' => 1, 'md' => 2])
                     ->schema([
                         TextInput::make('pengguna.name')
                             ->label('Pengguna (User)')
-                            ->placeholder('Sistem / Tamu'),
+                            ->placeholder('Sistem / Tamu')
+                            ->disabled(),
 
                         TextInput::make('tindakan')
-                            ->label('Tindakan Operasi'),
+                            ->label('Tindakan Operasi')
+                            ->disabled(),
 
                         TextInput::make('tipe_model')
-                            ->label('Tipe Model / Entitas'),
+                            ->label('Tipe Model / Entitas')
+                            ->disabled(),
 
                         TextInput::make('id_model')
-                            ->label('ID Model Terkait'),
+                            ->label('ID Model Terkait')
+                            ->disabled(),
 
                         TextInput::make('alamat_ip')
-                            ->label('Alamat IP'),
+                            ->label('Alamat IP')
+                            ->disabled(),
 
                         TextInput::make('agen_pengguna')
                             ->label('Peramban (User Agent)')
+                            ->disabled()
                             ->columnSpanFull(),
 
                         KeyValue::make('rincian')
                             ->label('Metadata Rincian')
+                            ->disabled()
                             ->columnSpanFull(),
                     ]),
             ]);

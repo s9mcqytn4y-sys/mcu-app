@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/filament/**/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../views/**/*.blade.php';
 @source '../../app/Filament/**/*.php';
@@ -17,5 +18,52 @@
 .fi-simple-page .fi-simple-main {
     max-width: 460px;
     border-radius: 1rem;
+}
+
+/* Fix Filament DatePicker calendar days 7-col grid & layout */
+.fi-fo-date-time-picker-panel [role="grid"] {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(2rem, 1fr)) !important;
+    gap: 0.25rem !important;
+    justify-items: center;
+    align-items: center;
+}
+
+.fi-fo-date-time-picker-panel .grid.grid-cols-7 {
+    display: grid !important;
+    grid-template-columns: repeat(7, minmax(2rem, 1fr)) !important;
+    gap: 0.25rem !important;
+    justify-items: center;
+    text-align: center;
+}
+
+.fi-fo-date-time-picker-panel [role="option"] {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 2rem !important;
+    height: 2rem !important;
+    border-radius: 9999px !important;
+}
+
+/* Dark theme browser autofill color clash override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #111C2D inset !important;
+    -webkit-text-fill-color: #f8fafc !important;
+    caret-color: #f8fafc !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Subtle micro-interactions for elevated clinical UX */
+.fi-wi-stats-overview-stat {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fi-wi-stats-overview-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
 

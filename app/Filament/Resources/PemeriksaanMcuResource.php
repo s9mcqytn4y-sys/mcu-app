@@ -40,18 +40,18 @@ class PemeriksaanMcuResource extends Resource
     {
         return $form
             ->schema([
-                Grid::make(['default' => 1, 'lg' => 3])
+                Grid::make(['default' => 1, 'lg' => 12])
                     ->schema([
-                        // Kolom Kiri (2 Kolom): Section 1 (Data MCU) & Section 2 (Lampiran)
+                        // Kolom Kiri (8 Kolom): Section 1 (Data MCU) & Section 2 (Lampiran)
                         Grid::make(1)
-                            ->columnSpan(['default' => 1, 'lg' => 2])
+                            ->columnSpan(['default' => 1, 'lg' => 8])
                             ->schema([
                                 Section::make('1. Data Sertifikat MCU')
                                     ->description('Isi data pasien dan hasil pemeriksaan MCU secara lengkap.')
                                     ->icon('heroicon-o-document-text')
                                     ->collapsible()
                                     ->schema([
-                                        Grid::make(2)->schema([
+                                        Grid::make(['default' => 1, 'md' => 2])->schema([
                                             TextInput::make('nama_pasien')
                                                 ->label('Nama Lengkap (Name)')
                                                 ->required()
@@ -71,11 +71,13 @@ class PemeriksaanMcuResource extends Resource
                                                 ->native(false),
                                         ]),
 
-                                        Grid::make(2)->schema([
+                                        Grid::make(['default' => 1, 'md' => 2])->schema([
                                             DatePicker::make('tanggal_lahir')
                                                 ->label('Tanggal Lahir (Date of Birth)')
                                                 ->required()
                                                 ->maxDate(now())
+                                                ->displayFormat('d/m/Y')
+                                                ->closeOnDateSelection()
                                                 ->native(false),
 
                                             TextInput::make('no_ktp')
@@ -92,7 +94,7 @@ class PemeriksaanMcuResource extends Resource
                                                 ->helperText('Jika NIK sudah ada, data pasien otomatis diperbarui.'),
                                         ]),
 
-                                        Grid::make(2)->schema([
+                                        Grid::make(['default' => 1, 'md' => 2])->schema([
                                             TextInput::make('no_paspor')
                                                 ->label('Paspor (Passport) - Opsional')
                                                 ->maxLength(30)
@@ -107,17 +109,21 @@ class PemeriksaanMcuResource extends Resource
                                                 ->placeholder('PT / Perusahaan Pemohon'),
                                         ]),
 
-                                        Grid::make(2)->schema([
+                                        Grid::make(['default' => 1, 'md' => 2])->schema([
                                             DatePicker::make('tanggal_periksa')
                                                 ->label('Tanggal MCU (Date of Checkup)')
                                                 ->required()
                                                 ->default(now()->toDateString())
+                                                ->displayFormat('d/m/Y')
+                                                ->closeOnDateSelection()
                                                 ->native(false),
 
                                             DatePicker::make('berlaku_sampai')
                                                 ->label('Berlaku Sampai (Valid Until)')
                                                 ->required()
                                                 ->default(now()->addYears(2)->toDateString())
+                                                ->displayFormat('d/m/Y')
+                                                ->closeOnDateSelection()
                                                 ->native(false),
                                         ]),
 
@@ -155,13 +161,14 @@ class PemeriksaanMcuResource extends Resource
                                     ]),
                             ]),
 
-                        // Kolom Kanan (1 Kolom): Section 3 (Pratinjau Langsung & QR Code)
+                        // Kolom Kanan (4 Kolom): Section 3 (Pratinjau Langsung & QR Code) - Sticky di Desktop
                         Grid::make(1)
-                            ->columnSpan(['default' => 1, 'lg' => 1])
+                            ->columnSpan(['default' => 1, 'lg' => 4])
                             ->schema([
-                                Section::make('3. Pratinjau Langsung')
+                                Section::make('3. Pratinjau Sertifikat & QR')
                                     ->description('QR Code real-time yang dapat discan saat sertifikat diterbitkan.')
                                     ->icon('heroicon-o-qr-code')
+                                    ->extraAttributes(['class' => 'lg:sticky lg:top-4'])
                                     ->schema([
                                         \Filament\Forms\Components\View::make('filament.components.mcu-live-preview')
                                             ->viewData(fn (Get $get, ?PemeriksaanMcu $record): array => [
@@ -193,12 +200,14 @@ class PemeriksaanMcuResource extends Resource
                 TextColumn::make('pasien.nama')
                     ->label('Pasien')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->wrap(),
 
                 TextColumn::make('nama_perusahaan')
                     ->label('Perusahaan')
                     ->searchable()
-                    ->placeholder('-'),
+                    ->placeholder('-')
+                    ->wrap(),
 
                 TextColumn::make('status_kelayakan')
                     ->label('Kelayakan')
@@ -211,12 +220,12 @@ class PemeriksaanMcuResource extends Resource
 
                 TextColumn::make('tanggal_periksa')
                     ->label('Tanggal MCU')
-                    ->date('d M Y')
+                    ->date('d/m/Y')
                     ->sortable(),
 
                 TextColumn::make('berlaku_sampai')
                     ->label('Berlaku Hingga')
-                    ->date('d M Y')
+                    ->date('d/m/Y')
                     ->sortable(),
 
                 TextColumn::make('lampiran_mcu_count')
@@ -234,14 +243,14 @@ class PemeriksaanMcuResource extends Resource
                     ]),
             ])
             ->actions([
-                Action::make('lihat_publik')
-                    ->label('Portal Publik')
-                    ->icon('heroicon-m-arrow-top-right-on-square')
-                    ->color('gray')
-                    ->url(fn (PemeriksaanMcu $record): string => route('mcu.verify', ['uuid' => $record->token_verifikasi]))
-                    ->openUrlInNewTab(),
-
                 \Filament\Tables\Actions\ActionGroup::make([
+                    Action::make('lihat_publik')
+                        ->label('Buka Portal Publik')
+                        ->icon('heroicon-m-arrow-top-right-on-square')
+                        ->color('gray')
+                        ->url(fn (PemeriksaanMcu $record): string => route('mcu.verify', ['uuid' => $record->token_verifikasi]))
+                        ->openUrlInNewTab(),
+
                     Action::make('unduh_qr_png')
                         ->label('Unduh QR (PNG 1024px)')
                         ->icon('heroicon-o-arrow-down-tray')

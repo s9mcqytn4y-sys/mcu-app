@@ -42,28 +42,38 @@ class UserResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Identitas Pengguna')
-                    ->description('Kelola akun login staf dan administrator klinik.')
-                    ->columns(2)
+                Section::make('Identitas & Akses Pengguna')
+                    ->description('Kelola kredensial akun login dan tingkat wewenang staf/administrator klinik.')
+                    ->columns(['default' => 1, 'md' => 2])
                     ->schema([
                         TextInput::make('name')
                             ->label('Nama Lengkap')
+                            ->placeholder('Contoh: Dr. Budi Santoso')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->autofocus()
+                            ->autocomplete('off')
+                            ->extraInputAttributes(['class' => 'min-h-[44px]']),
 
                         TextInput::make('username')
                             ->label('Nama Pengguna (Username)')
+                            ->placeholder('Contoh: budi_santoso')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->alphaDash()
-                            ->maxLength(50),
+                            ->maxLength(50)
+                            ->autocomplete('off')
+                            ->extraInputAttributes(['class' => 'min-h-[44px]']),
 
                         TextInput::make('email')
                             ->label('Alamat Surel (Email)')
+                            ->placeholder('Contoh: budi@klinikindosehat2003.com')
                             ->email()
                             ->required()
                             ->unique(ignoreRecord: true)
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->autocomplete('off')
+                            ->extraInputAttributes(['class' => 'min-h-[44px]', 'inputmode' => 'email']),
 
                         Select::make('peran')
                             ->label('Peran Akses (RBAC)')
@@ -72,21 +82,26 @@ class UserResource extends Resource
                                 'staf' => 'Staf Operasional (MCU & Pasien)',
                             ])
                             ->required()
-                            ->default('staf'),
-
-                        Toggle::make('aktif')
-                            ->label('Status Akun Aktif')
-                            ->helperText('Pengguna non-aktif tidak dapat masuk ke sistem.')
-                            ->default(true),
+                            ->default('staf')
+                            ->native(false),
 
                         TextInput::make('password')
-                            ->label('Kata Sandi Baru')
+                            ->label('Kata Sandi')
+                            ->placeholder(fn (string $operation): string => $operation === 'create' ? 'Masukkan kata sandi baru (min. 8 karakter)' : 'Kosongkan jika tidak ingin mengubah kata sandi')
                             ->password()
+                            ->revealable()
                             ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? Hash::make($state) : null)
                             ->dehydrated(fn (?string $state): bool => filled($state))
                             ->required(fn (string $operation): bool => $operation === 'create')
+                            ->autocomplete('new-password')
                             ->maxLength(255)
-                            ->columnSpanFull(),
+                            ->extraInputAttributes(['class' => 'min-h-[44px]']),
+
+                        Toggle::make('aktif')
+                            ->label('Status Akun Aktif')
+                            ->helperText('Pengguna non-aktif akan diblokir dari akses masuk sistem.')
+                            ->default(true)
+                            ->inline(false),
                     ]),
             ]);
     }
