@@ -128,10 +128,27 @@ class PasienResource extends Resource
                     ]),
             ])
             ->actions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Ubah Data'),
+
+                \Filament\Tables\Actions\DeleteAction::make()
+                    ->label('Hapus')
+                    ->requiresConfirmation()
+                    ->modalHeading('Konfirmasi Hapus Data Pasien')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus data pasien ini? Seluruh data rekam pemeriksaan MCU pasien ini juga akan terhapus.')
+                    ->modalSubmitActionLabel('Ya, Hapus Data')
+                    ->modalCancelActionLabel('Batal')
+                    ->color('danger')
+                    ->visible(fn (): bool => auth()->user()?->isAdministrator() ?? false),
             ])
             ->bulkActions([
                 DeleteBulkAction::make()
+                    ->label('Hapus Terpilih')
+                    ->requiresConfirmation()
+                    ->modalHeading('Konfirmasi Hapus Massal Pasien')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus data pasien terpilih beserta seluruh rekam pemeriksaan terkait?')
+                    ->modalSubmitActionLabel('Ya, Hapus Semua Terpilih')
+                    ->modalCancelActionLabel('Batal')
                     ->visible(fn (): bool => auth()->user()?->isAdministrator() ?? false),
             ]);
     }

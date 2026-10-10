@@ -18,8 +18,17 @@ class EditUser extends EditRecord
     {
         return [
             DeleteAction::make()
+                ->modalHeading('Konfirmasi Hapus Pengguna')
+                ->modalDescription('Apakah Anda yakin ingin menghapus akun pengguna ini? Tindakan ini tidak dapat dibatalkan.')
+                ->modalSubmitActionLabel('Ya, Hapus Pengguna')
+                ->modalCancelActionLabel('Batal')
                 ->hidden(fn (User $record): bool => $record->id === Auth::id()),
         ];
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Data pengguna berhasil diperbarui';
     }
 
     protected function getRedirectUrl(): string

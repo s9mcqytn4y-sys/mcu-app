@@ -14,6 +14,11 @@ class CreatePemeriksaanMcu extends CreateRecord
 {
     protected static string $resource = PemeriksaanMcuResource::class;
 
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'Data pemeriksaan MCU berhasil dibuat';
+    }
+
     protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($data) {

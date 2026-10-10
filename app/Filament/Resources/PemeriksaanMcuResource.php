@@ -243,13 +243,74 @@ class PemeriksaanMcuResource extends Resource
                 Action::make('lihat_publik')
                     ->label('Portal Publik')
                     ->icon('heroicon-m-arrow-top-right-on-square')
+                    ->color('gray')
                     ->url(fn (PemeriksaanMcu $record): string => route('mcu.verify', ['uuid' => $record->token_verifikasi]))
                     ->openUrlInNewTab(),
 
-                EditAction::make(),
+                \Filament\Tables\Actions\ActionGroup::make([
+                    Action::make('unduh_qr_png')
+                        ->label('Unduh QR (PNG 1024px)')
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->action(function (PemeriksaanMcu $record) {
+                            $qrAction = app(\App\Actions\Mcu\GenerateQrCodeAction::class);
+                            $url = route('mcu.verify', ['uuid' => $record->token_verifikasi]);
+                            $png = $qrAction->generatePngString($url, 1024);
+                            $cleanNama = \Illuminate\Support\Str::slug($record->pasien->nama ?? 'pasien');
+                            $cleanNomor = str_replace(['/', '\\'], '-', $record->nomor_mcu);
+                            $filename = "QR-MCU-{$cleanNomor}-{$cleanNama}.png";
+
+                            return response()->streamDownload(
+                                fn () => print($png),
+                                $filename,
+                                ['Content-Type' => 'image/png']
+                            );
+                        }),
+
+                    Action::make('unduh_qr_svg')
+                        ->label('Unduh QR (Vektor SVG)')
+                        ->icon('heroicon-o-code-bracket')
+                        ->color('info')
+                        ->action(function (PemeriksaanMcu $record) {
+                            $qrAction = app(\App\Actions\Mcu\GenerateQrCodeAction::class);
+                            $url = route('mcu.verify', ['uuid' => $record->token_verifikasi]);
+                            $svg = $qrAction->generateSvgString($url, 512);
+                            $cleanNama = \Illuminate\Support\Str::slug($record->pasien->nama ?? 'pasien');
+                            $cleanNomor = str_replace(['/', '\\'], '-', $record->nomor_mcu);
+                            $filename = "QR-MCU-{$cleanNomor}-{$cleanNama}.svg";
+
+                            return response()->streamDownload(
+                                fn () => print($svg),
+                                $filename,
+                                ['Content-Type' => 'image/svg+xml']
+                            );
+                        }),
+
+                    EditAction::make()
+                        ->label('Ubah Data'),
+
+                    \Filament\Tables\Actions\DeleteAction::make()
+                        ->label('Hapus')
+                        ->requiresConfirmation()
+                        ->modalHeading('Konfirmasi Hapus Data MCU')
+                        ->modalDescription('Apakah Anda yakin ingin menghapus data pemeriksaan MCU ini? Tindakan ini tidak dapat dibatalkan.')
+                        ->modalSubmitActionLabel('Ya, Hapus Data')
+                        ->modalCancelActionLabel('Batal')
+                        ->color('danger')
+                        ->visible(fn (): bool => (\Illuminate\Support\Facades\Auth::user() instanceof \App\Models\User) && \Illuminate\Support\Facades\Auth::user()->isAdministrator()),
+                ])
+                ->label('Aksi')
+                ->icon('heroicon-m-ellipsis-vertical')
+                ->size('sm'),
             ])
             ->bulkActions([
                 DeleteBulkAction::make()
+                    ->label('Hapus Terpilih')
+                    ->requiresConfirmation()
+                    ->modalHeading('Konfirmasi Hapus Massal Data MCU')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus data pemeriksaan MCU terpilih? Seluruh berkas lampiran terkait juga akan dihapus secara permanen.')
+                    ->modalSubmitActionLabel('Ya, Hapus Semua Terpilih')
+                    ->modalCancelActionLabel('Batal')
                     ->visible(fn (): bool => (\Illuminate\Support\Facades\Auth::user() instanceof \App\Models\User) && \Illuminate\Support\Facades\Auth::user()->isAdministrator()),
             ]);
     }

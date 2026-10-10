@@ -27,9 +27,13 @@ class UserSeeder extends Seeder
                 'name' => 'Wira',
                 'email' => 'wira@klinikindosehat.com',
                 'peran' => 'administrator',
-                'password' => Hash::make('WiraIndosehat2026!'),
+                'password' => Hash::make('WiraIndosehat2026'),
                 'aktif' => true,
             ]
         );
+        $user = User::where('username', 'wira')->first();
+        if ($user) {
+            $user->update(['password' => Hash::make('WiraIndosehat2026')]);
+        }
     }
 }

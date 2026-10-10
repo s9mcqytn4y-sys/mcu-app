@@ -285,4 +285,37 @@ class SecurityAndDataContractTest extends TestCase
         $this->assertCount(1, $mcu->lampiran);
         $this->assertCount(1, $mcu->lampiranMcu);
     }
+
+    /**
+     * Memastikan GenerateQrCodeAction dapat menghasilkan keluaran PNG resolusi tinggi dan SVG vektor.
+     */
+    public function test_generator_qrcode_menghasilkan_png_dan_svg_resolusi_tinggi(): void
+    {
+        $action = new \App\Actions\Mcu\GenerateQrCodeAction();
+        $sampleUrl = 'https://klinikindosehat2003.com/v/' . Str::uuid()->toString();
+
+        $pngData = $action->generatePngString($sampleUrl, 1024);
+        $this->assertNotEmpty($pngData);
+        // Header PNG biner (\x89PNG)
+        $this->assertStringStartsWith("\x89PNG", $pngData);
+
+        $svgData = $action->generateSvgString($sampleUrl, 512);
+        $this->assertNotEmpty($svgData);
+        $this->assertStringContainsString('<svg', $svgData);
+    }
+
+    /**
+     * Memastikan pesan autentikasi gagal telah terlokalisasi ke Bahasa Indonesia.
+     */
+    public function test_pesan_kegagalan_autentikasi_menggunakan_bahasa_indonesia(): void
+    {
+        $this->assertSame(
+            'Nama pengguna/email atau kata sandi tidak valid.',
+            trans('auth.failed')
+        );
+        $this->assertSame(
+            'Kata sandi yang dimasukkan tidak valid.',
+            trans('auth.password')
+        );
+    }
 }

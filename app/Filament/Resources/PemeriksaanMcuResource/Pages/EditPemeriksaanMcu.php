@@ -18,8 +18,17 @@ class EditPemeriksaanMcu extends EditRecord
     {
         return [
             DeleteAction::make()
+                ->modalHeading('Konfirmasi Hapus Data MCU')
+                ->modalDescription('Apakah Anda yakin ingin menghapus data pemeriksaan MCU ini? Tindakan ini tidak dapat dibatalkan.')
+                ->modalSubmitActionLabel('Ya, Hapus Data')
+                ->modalCancelActionLabel('Batal')
                 ->visible(fn (): bool => (\Illuminate\Support\Facades\Auth::user() instanceof \App\Models\User) && \Illuminate\Support\Facades\Auth::user()->isAdministrator()),
         ];
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Data pemeriksaan MCU berhasil diperbarui';
     }
 
     protected function mutateFormDataBeforeFill(array $data): array

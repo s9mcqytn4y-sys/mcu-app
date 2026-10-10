@@ -248,13 +248,21 @@
         .btn-attachment-action {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            min-width: 44px;
             gap: 6px;
-            padding: 8px 16px;
+            padding: 10px 18px;
             border-radius: 8px;
-            font-size: 0.825rem;
+            font-size: 0.85rem;
             font-weight: 600;
             text-decoration: none;
             transition: all 0.2s ease;
+        }
+
+        .btn-attachment-action:focus-visible {
+            outline: 2px solid #0284c7;
+            outline-offset: 2px;
         }
 
         .btn-open-full {

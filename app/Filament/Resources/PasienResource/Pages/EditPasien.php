@@ -16,7 +16,16 @@ class EditPasien extends EditRecord
     {
         return [
             DeleteAction::make()
+                ->modalHeading('Konfirmasi Hapus Data Pasien')
+                ->modalDescription('Apakah Anda yakin ingin menghapus data pasien ini? Seluruh data pemeriksaan terkait juga akan terpengaruh.')
+                ->modalSubmitActionLabel('Ya, Hapus Pasien')
+                ->modalCancelActionLabel('Batal')
                 ->visible(fn (): bool => auth()->user()?->isAdministrator() ?? false),
         ];
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Data pasien berhasil diperbarui';
     }
 }

@@ -138,8 +138,16 @@ class UserResource extends Resource
                     ]),
             ])
             ->actions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Ubah Data'),
                 DeleteAction::make()
+                    ->label('Hapus')
+                    ->requiresConfirmation()
+                    ->modalHeading('Konfirmasi Hapus Pengguna')
+                    ->modalDescription('Apakah Anda yakin ingin menghapus akun pengguna ini? Tindakan ini bersifat permanen.')
+                    ->modalSubmitActionLabel('Ya, Hapus Pengguna')
+                    ->modalCancelActionLabel('Batal')
+                    ->color('danger')
                     ->hidden(fn (User $record): bool => $record->id === Auth::id()),
             ])
             ->bulkActions([]);

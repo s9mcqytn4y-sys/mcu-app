@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'failed' => 'Kombinasi nama pengguna/email dan kata sandi tidak cocok dengan data kami.',
-    'password' => 'Kata sandi yang dimasukkan salah.',
-    'throttle' => 'Terlalu banyak upaya masuk. Silakan coba lagi dalam :seconds detik.',
+    'failed' => 'Nama pengguna/email atau kata sandi tidak valid.',
+    'password' => 'Kata sandi yang dimasukkan tidak valid.',
+    'throttle' => 'Terlalu banyak percobaan masuk. Silakan coba lagi dalam :seconds detik.',
 ];
