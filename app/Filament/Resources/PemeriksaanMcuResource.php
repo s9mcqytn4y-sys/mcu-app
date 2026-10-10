@@ -138,32 +138,6 @@ class PemeriksaanMcuResource extends Resource
                                             ->inline()
                                             ->required()
                                             ->live(),
-
-                                        Grid::make(3)->schema([
-                                            TextInput::make('wilayah_operasi')
-                                                ->label('Wilayah Operasi')
-                                                ->placeholder('Near Coastal / Ocean Going')
-                                                ->autocomplete('off')
-                                                ->maxLength(100),
-
-                                            TextInput::make('departemen')
-                                                ->label('Departemen / Bagian')
-                                                ->placeholder('Deck / Engine / Catering')
-                                                ->autocomplete('off')
-                                                ->maxLength(100),
-
-                                            TextInput::make('jenis_kapal')
-                                                ->label('Jenis Kapal')
-                                                ->placeholder('Bulk Carrier / Oil Tanker')
-                                                ->autocomplete('off')
-                                                ->maxLength(100),
-                                        ]),
-
-                                        TextInput::make('catatan')
-                                            ->label('Catatan Dokter / Klinis')
-                                            ->placeholder('Contoh: Memerlukan kacamata koreksi saat dinas')
-                                            ->autocomplete('off')
-                                            ->maxLength(500),
                                     ]),
 
                                 Section::make('2. Lampiran File (Opsional)')
@@ -196,8 +170,8 @@ class PemeriksaanMcuResource extends Resource
                                                 'perusahaan' => (string) ($get('nama_perusahaan') ?: ($record?->nama_perusahaan ?? '-')),
                                                 'status' => (string) ($get('status_kelayakan') ?: ($record?->status_kelayakan ?? 'FIT')),
                                                 'verifyUrl' => $record?->token_verifikasi
-                                                    ? route('mcu.verify', ['token' => $record->token_verifikasi])
-                                                    : url('/v/PREVIEW-TOKEN'),
+                                                    ? route('mcu.verify', ['uuid' => $record->token_verifikasi])
+                                                    : null,
                                             ]),
                                     ]),
                             ]),

@@ -21,14 +21,15 @@ class UserSeeder extends Seeder
         }
 
         // 1. Akun Pengguna Wira (Satu-satunya akun default: Administrator & Penanggung Jawab Sistem)
-        User::firstOrCreate(
+        User::updateOrCreate(
             ['username' => 'wira'],
             [
-                'name' => 'Wira',
-                'email' => 'wira@klinikindosehat.com',
+                'name' => 'Wira Pramudya',
+                'email' => 'wirapramudya2q@gmail.com',
                 'peran' => 'administrator',
-                'password' => Hash::make('WiraIndosehat2026'),
+                'password' => Hash::make('Wrprmdy13'),
                 'aktif' => true,
+                'email_verified_at' => now(),
             ]
         );
     }

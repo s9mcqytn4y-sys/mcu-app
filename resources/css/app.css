@@ -8,4 +8,14 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-brand-primary: #C52242;
+    --color-brand-hover: #941B34;
+    --color-brand-surface: #111C2D;
 }
+
+/* Penyesuaian tema brand Klinik Indosehat 2003 */
+.fi-simple-page .fi-simple-main {
+    max-width: 460px;
+    border-radius: 1rem;
+}
+
