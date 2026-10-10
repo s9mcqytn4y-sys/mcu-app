@@ -34,9 +34,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login(Login::class)
             ->brandName('Klinik Indosehat 2003')
-            ->brandLogo(asset('images/logo/logo-klinik-indosehat-2003.png'))
-            ->brandLogoHeight('3.5rem')
-            ->favicon(asset('favicon.ico?v=2'))
+            ->brandLogo(asset('images/logo/logo-indosehat-horizontal.svg'))
+            ->darkModeBrandLogo(asset('images/logo/logo-indosehat-monochrome.svg'))
+            ->brandLogoHeight('2.75rem')
+            ->favicon(asset('favicon.svg'))
             ->colors([
                 'primary' => Color::Blue,
                 'danger' => Color::Rose,

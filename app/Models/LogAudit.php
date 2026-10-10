@@ -103,13 +103,19 @@ class LogAudit extends Model
         ?array $rincian = null,
         ?int $idPengguna = null,
         ?string $aksi = null,
-        ?Model $model = null
+        ?Model $model = null,
+        ?string $keterangan = null
     ): self {
         $tindakanFinal = $aksi ?? $tindakan;
 
         $targetModel = $model ?? ($tipeModel instanceof Model ? $tipeModel : null);
         $tipeModelFinal = $targetModel ? get_class($targetModel) : (is_string($tipeModel) ? $tipeModel : null);
         $idModelFinal = $targetModel ? (int) $targetModel->getKey() : $idModel;
+
+        $rincianPayload = $rincian ?? [];
+        if ($keterangan !== null && $keterangan !== '') {
+            $rincianPayload['keterangan'] = $keterangan;
+        }
 
         return self::create([
             'id_pengguna' => $idPengguna ?? Auth::id(),
@@ -118,7 +124,7 @@ class LogAudit extends Model
             'id_model' => $idModelFinal,
             'alamat_ip' => Request::ip() ?? '127.0.0.1',
             'agen_pengguna' => substr(Request::userAgent() ?? 'CLI/System', 0, 500),
-            'rincian' => $rincian,
+            'rincian' => !empty($rincianPayload) ? $rincianPayload : null,
         ]);
     }
 

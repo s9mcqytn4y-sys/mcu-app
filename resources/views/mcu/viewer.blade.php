@@ -26,8 +26,9 @@
     <meta property="twitter:image" content="{{ asset('images/logo/logo-klinik-indosehat-2003.png') }}">
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
-    <link rel="apple-touch-icon" href="{{ asset('images/logo/logo-klinik-indosehat-2003.png') }}">
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    <link rel="alternate icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo/logo-indosehat-mark.svg') }}">
     
     <!-- Tipografi Modern -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -343,10 +344,14 @@
     <!-- Header Identitas Fasilitas Kesehatan -->
     <header class="header-brand">
         <img 
-            src="{{ asset('images/logo/logo-klinik-indosehat-2003.png') }}" 
+            src="{{ asset('images/logo/logo-indosehat-horizontal.svg') }}" 
             alt="Klinik Indosehat 2003"
-            onerror="this.onerror=null; this.src='{{ asset('logo-klinik-indosehat-2003.png') }}';"
+            onerror="this.onerror=null; this.src='{{ asset('images/logo/logo-klinik-indosehat-2003.png') }}';"
         >
+        <div class="verification-badge-container" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; padding: 4px 12px; background: rgba(7, 46, 109, 0.04); border: 1px solid rgba(7, 46, 109, 0.12); border-radius: 9999px;">
+            <img src="{{ asset('images/badges/badge-terverifikasi-mcu.svg') }}" alt="Verifikasi Resmi Indosehat" style="width: 20px; height: 20px;" />
+            <span style="font-size: 0.75rem; font-weight: 700; color: #072E6D; letter-spacing: 0.05em; text-transform: uppercase;">Terverifikasi Resmi Digital</span>
+        </div>
         <h1 class="page-title">Sertifikat Hasil Medical Check-Up</h1>
         <p class="page-subtitle">Electronic Verification System</p>
     </header>

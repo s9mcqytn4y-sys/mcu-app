@@ -18,6 +18,28 @@ class GenerateNomorMcuAction
     }
 
     /**
+     * Tampilkan perkiraan nomor MCU berikutnya tanpa memutasi sekuens database.
+     */
+    public function generatePreview(?int $tahun = null): string
+    {
+        $tahunTarget = $tahun ?? (int) date('Y');
+
+        $sekuens = DB::table('nomor_mcu_sekuens')
+            ->where('tahun', $tahunTarget)
+            ->first();
+
+        if (! $sekuens) {
+            $hitungEksisting = PemeriksaanMcu::whereYear('tanggal_periksa', $tahunTarget)
+                ->orWhereYear('created_at', $tahunTarget)
+                ->count();
+
+            return sprintf('%04d/MCU-KIS/%d', $hitungEksisting + 1, $tahunTarget);
+        }
+
+        return sprintf('%04d/MCU-KIS/%d', ((int) $sekuens->sekuens_terakhir) + 1, $tahunTarget);
+    }
+
+    /**
      * Hasilkan nomor MCU berikutnya secara atomik dan bebas dari race condition.
      * Format: %04d/MCU-KIS/%s (contoh: 0001/MCU-KIS/2026)
      */

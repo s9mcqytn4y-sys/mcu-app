@@ -51,8 +51,9 @@ class LampiranMcu extends Model
      */
     protected static function booted(): void
     {
-        static::saving(function (LampiranMcu $lampiran): void {
+        static::creating(function (self $lampiran): void {
             if (!empty($lampiran->path_berkas) && \Illuminate\Support\Facades\Storage::disk('local')->exists($lampiran->path_berkas)) {
+                /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
                 $disk = \Illuminate\Support\Facades\Storage::disk('local');
                 if (empty($lampiran->ukuran_berkas)) {
                     $lampiran->ukuran_berkas = (int) $disk->size($lampiran->path_berkas);
@@ -81,8 +82,8 @@ class LampiranMcu extends Model
                 }
             }
 
-            if (empty($lampiran->diunggah_oleh) && auth()->check()) {
-                $lampiran->diunggah_oleh = auth()->id();
+            if (empty($lampiran->diunggah_oleh) && \Illuminate\Support\Facades\Auth::check()) {
+                $lampiran->diunggah_oleh = (int) \Illuminate\Support\Facades\Auth::id();
             }
         });
     }

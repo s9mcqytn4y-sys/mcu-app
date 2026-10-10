@@ -18,7 +18,7 @@ class EditPemeriksaanMcu extends EditRecord
     {
         return [
             DeleteAction::make()
-                ->visible(fn (): bool => auth()->user()?->isAdministrator() ?? false),
+                ->visible(fn (): bool => (\Illuminate\Support\Facades\Auth::user() instanceof \App\Models\User) && \Illuminate\Support\Facades\Auth::user()->isAdministrator()),
         ];
     }
 

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 100" fill="none" width="100%" height="100%">
+  <!-- Crest Symbol (Left Icon) in White / Slate -->
+  <g transform="translate(10, 8)">
+    <path d="M42 2 C68 2, 80 14, 80 34 C80 58, 54 74, 42 82 C30 74, 4 58, 4 34 C4 14, 16 2, 42 2 Z" fill="#FFFFFF" fill-opacity="0.12" stroke="#FFFFFF" stroke-width="2" />
+    <path d="M26 44 C26 54, 33 60, 42 60 C51 60, 58 54, 58 44" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" fill="none" />
+    <path d="M22 42 L26 44 L30 40" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <path d="M62 42 L58 44 L54 40" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <line x1="42" y1="20" x2="42" y2="58" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" />
+    <circle cx="42" cy="18" r="4.5" stroke="#FFFFFF" stroke-width="2" fill="none" />
+    <line x1="32" y1="26" x2="52" y2="26" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Clinical Cross Core -->
+    <g transform="translate(34, 30)">
+      <rect x="6" y="0" width="6" height="20" rx="1.5" fill="#FFFFFF" />
+      <rect x="0" y="7" width="18" height="6" rx="1.5" fill="#FFFFFF" />
+    </g>
+  </g>
+
+  <!-- Typography (Monochrome) -->
+  <g transform="translate(108, 22)">
+    <text x="0" y="24" font-family="'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="24" font-weight="800" fill="#FFFFFF" letter-spacing="0.5">
+      KLINIK INDOSEHAT 2003
+    </text>
+    <text x="0" y="44" font-family="'Plus Jakarta Sans', 'Inter', -apple-system, sans-serif" font-size="10.5" font-weight="600" fill="#94A3B8" letter-spacing="2">
+      MARITIME &amp; OCCUPATIONAL HEALTH CENTER
+    </text>
+
+    <!-- Accreditation Badges (Monochrome subtle) -->
+    <g transform="translate(0, 53)">
+      <rect x="0" y="0" width="70" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.15" />
+      <text x="35" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+        PERHUBUNGAN
+      </text>
+
+      <rect x="76" y="0" width="56" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.15" />
+      <text x="104" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+        KEMENKES
+      </text>
+
+      <rect x="138" y="0" width="62" height="15" rx="3" fill="#FFFFFF" fill-opacity="0.15" />
+      <text x="169" y="11" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700" fill="#FFFFFF" text-anchor="middle">
+        TERAKREDITASI
+      </text>
+    </g>
+  </g>
+</svg>

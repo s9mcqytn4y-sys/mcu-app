@@ -17,7 +17,7 @@ class CreatePemeriksaanMcu extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['token_verifikasi'] = (string) Str::uuid();
-        $data['dibuat_oleh'] = auth()->id() ?? 1;
+        $data['dibuat_oleh'] = \Illuminate\Support\Facades\Auth::id() ?? 1;
 
         return $data;
     }

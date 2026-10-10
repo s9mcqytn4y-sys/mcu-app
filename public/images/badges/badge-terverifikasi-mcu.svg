@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" width="100%" height="100%">
+  <defs>
+    <!-- Circular Text Path -->
+    <path id="textCircleTop" d="M 28,100 A 72,72 0 1,1 172,100" />
+    <path id="textCircleBottom" d="M 172,100 A 72,72 0 0,1 28,100" />
+    
+    <linearGradient id="badgeGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="100%" stop-color="#072E6D" />
+    </linearGradient>
+    <linearGradient id="shieldGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <filter id="badgeShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#072E6D" flood-opacity="0.2" />
+    </filter>
+  </defs>
+
+  <!-- Outer Rosette / Starburst Ring -->
+  <circle cx="100" cy="100" r="95" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="2" />
+  <circle cx="100" cy="100" r="88" fill="url(#badgeGold)" filter="url(#badgeShadow)" />
+  <circle cx="100" cy="100" r="84" stroke="#93C5FD" stroke-width="1.5" stroke-dasharray="3 3" fill="none" />
+
+  <!-- Verification Text along Circular Path -->
+  <text font-family="'Plus Jakarta Sans', sans-serif" font-size="8.5" font-weight="800" fill="#FFFFFF" letter-spacing="2">
+    <textPath href="#textCircleTop" startOffset="50%" text-anchor="middle">
+      KLINIK INDOSEHAT 2003 • RESMI
+    </textPath>
+  </text>
+  <text font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="700" fill="#93C5FD" letter-spacing="1.5">
+    <textPath href="#textCircleBottom" startOffset="50%" text-anchor="middle">
+      ★ TERVERIFIKASI SISTEM MCU ★
+    </textPath>
+  </text>
+
+  <!-- Inner Center Circle -->
+  <circle cx="100" cy="100" r="54" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="2" />
+
+  <!-- Verified Shield with Checkmark & Medical Motif -->
+  <g transform="translate(68, 66)">
+    <!-- Green Shield -->
+    <path d="M32 4 C48 4, 56 12, 56 26 C56 46, 38 58, 32 64 C26 58, 8 46, 8 26 C8 12, 16 4, 32 4 Z" fill="url(#shieldGreen)" />
+    
+    <!-- Bold White Checkmark -->
+    <path d="M22 33 L29 40 L43 23" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+    <!-- Small Anchor Dot Emblem -->
+    <circle cx="32" cy="14" r="2.5" fill="#FFFFFF" />
+  </g>
+
+  <!-- Tiny Trust Ribbon Label below -->
+  <g transform="translate(56, 142)">
+    <rect x="0" y="0" width="88" height="18" rx="4" fill="#072E6D" />
+    <text x="44" y="12.5" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">
+      AUTHENTIC SEAL
+    </text>
+  </g>
+</svg>
