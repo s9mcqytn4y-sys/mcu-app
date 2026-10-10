@@ -19,6 +19,20 @@ class CreatePemeriksaanMcu extends CreateRecord
         return 'Data pemeriksaan MCU berhasil dibuat';
     }
 
+    protected function getCreateFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCreateFormAction()
+            ->keyBindings(['mod+s'])
+            ->label('Terbitkan Sertifikat (Ctrl+S)');
+    }
+
+    protected function getCancelFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCancelFormAction()
+            ->keyBindings(['escape'])
+            ->label('Batal (Esc)');
+    }
+
     protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($data) {

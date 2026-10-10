@@ -17,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -56,7 +57,9 @@ class PemeriksaanMcuResource extends Resource
                                                 ->required()
                                                 ->maxLength(255)
                                                 ->placeholder('Contoh: AZIZ')
-                                                ->live(debounce: 500),
+                                                ->autofocus()
+                                                ->autocomplete('off')
+                                                ->live(debounce: 1000),
 
                                             Select::make('jenis_kelamin')
                                                 ->label('Jenis Kelamin (Gender)')
@@ -84,6 +87,8 @@ class PemeriksaanMcuResource extends Resource
                                                     'regex' => 'Nomor KTP wajib tepat 16 digit angka.',
                                                 ])
                                                 ->placeholder('16 Digit NIK')
+                                                ->autocomplete('off')
+                                                ->extraInputAttributes(['inputmode' => 'numeric', 'pattern' => '[0-9]*'])
                                                 ->helperText('Jika NIK sudah ada, data pasien otomatis diperbarui.'),
                                         ]),
 
@@ -91,12 +96,14 @@ class PemeriksaanMcuResource extends Resource
                                             TextInput::make('no_paspor')
                                                 ->label('Paspor (Passport) - Opsional')
                                                 ->maxLength(30)
+                                                ->autocomplete('off')
                                                 ->placeholder('Nomor Paspor Aktif'),
 
                                             TextInput::make('nama_perusahaan')
                                                 ->label('Perusahaan (Company)')
                                                 ->required()
                                                 ->maxLength(255)
+                                                ->autocomplete('off')
                                                 ->placeholder('PT / Perusahaan Pemohon'),
                                         ]),
 
@@ -136,22 +143,26 @@ class PemeriksaanMcuResource extends Resource
                                             TextInput::make('wilayah_operasi')
                                                 ->label('Wilayah Operasi')
                                                 ->placeholder('Near Coastal / Ocean Going')
+                                                ->autocomplete('off')
                                                 ->maxLength(100),
 
                                             TextInput::make('departemen')
                                                 ->label('Departemen / Bagian')
                                                 ->placeholder('Deck / Engine / Catering')
+                                                ->autocomplete('off')
                                                 ->maxLength(100),
 
                                             TextInput::make('jenis_kapal')
                                                 ->label('Jenis Kapal')
                                                 ->placeholder('Bulk Carrier / Oil Tanker')
+                                                ->autocomplete('off')
                                                 ->maxLength(100),
                                         ]),
 
                                         TextInput::make('catatan')
                                             ->label('Catatan Dokter / Klinis')
                                             ->placeholder('Contoh: Memerlukan kacamata koreksi saat dinas')
+                                            ->autocomplete('off')
                                             ->maxLength(500),
                                     ]),
 
@@ -178,7 +189,16 @@ class PemeriksaanMcuResource extends Resource
                                     ->description('QR Code real-time yang dapat discan saat sertifikat diterbitkan.')
                                     ->icon('heroicon-o-qr-code')
                                     ->schema([
-                                        \Filament\Forms\Components\View::make('filament.components.mcu-live-preview'),
+                                        \Filament\Forms\Components\View::make('filament.components.mcu-live-preview')
+                                            ->viewData(fn (Get $get, ?PemeriksaanMcu $record): array => [
+                                                'record' => $record,
+                                                'nama' => (string) ($get('nama_pasien') ?: ($record?->pasien?->nama ?? '-')),
+                                                'perusahaan' => (string) ($get('nama_perusahaan') ?: ($record?->nama_perusahaan ?? '-')),
+                                                'status' => (string) ($get('status_kelayakan') ?: ($record?->status_kelayakan ?? 'FIT')),
+                                                'verifyUrl' => $record?->token_verifikasi
+                                                    ? route('mcu.verify', ['token' => $record->token_verifikasi])
+                                                    : url('/v/PREVIEW-TOKEN'),
+                                            ]),
                                     ]),
                             ]),
                     ]),

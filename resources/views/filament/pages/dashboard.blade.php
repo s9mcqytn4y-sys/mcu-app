@@ -6,10 +6,10 @@
                 <div>
                     <div class="inline-flex items-center gap-2 rounded-md bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
                         <span class="inline-block size-2 rounded-full bg-teal-500"></span>
-                        Portal Operasional Klinik Indosehat 2003
+                        Ringkasan Pemeriksaan
                     </div>
                     <h2 class="mt-2 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                        Sistem Penerbitan & Verifikasi Hasil Medical Check-Up
+                        Kelola pemeriksaan dan sertifikat MCU dari satu tempat.
                     </h2>
                     <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
                         Kelola data pasien pelaut/tenaga kerja, validasi kelayakan medis maritim, dan terbitkan sertifikat ber-QR terverifikasi.
@@ -46,7 +46,7 @@
             {{-- Kartu 1: Pemeriksaan Hari Ini --}}
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Hari Ini</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pemeriksaan Hari Ini</span>
                     <span class="rounded-full bg-teal-50 p-2 text-teal-700 dark:bg-teal-950/60 dark:text-teal-300">
                         <x-heroicon-o-calendar-days class="size-5" />
                     </span>
@@ -61,10 +61,10 @@
                 </div>
             </div>
 
-            {{-- Kartu 2: Kelayakan Kerja --}}
+            {{-- Kartu 2: Hasil Pemeriksaan --}}
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Rasio Kelayakan</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Hasil Pemeriksaan</span>
                     <span class="rounded-full bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                         <x-heroicon-o-check-badge class="size-5" />
                     </span>
@@ -87,7 +87,7 @@
             {{-- Kartu 3: Total Pasien --}}
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Rekam Pasien</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Pasien</span>
                     <span class="rounded-full bg-blue-50 p-2 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
                         <x-heroicon-o-identification class="size-5" />
                     </span>
@@ -102,7 +102,7 @@
                 </div>
             </div>
 
-            {{-- Kartu 4: Integritas & Total Arsip --}}
+            {{-- Kartu 4: Total Arsip MCU --}}
             <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Arsip MCU</span>
@@ -116,7 +116,7 @@
                     </div>
                     <div class="mt-1 flex items-center gap-1 text-xs font-medium text-teal-700 dark:text-teal-400">
                         <span class="inline-block size-1.5 rounded-full bg-teal-500"></span>
-                        Storage Privat & Audit Aktif
+                        Arsip tersimpan dengan audit log
                     </div>
                 </div>
             </div>
@@ -166,24 +166,24 @@
                 </div>
             @else
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm" role="table">
+                    <table class="w-full min-w-full text-left text-sm" role="table">
                         <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
                             <tr>
-                                <th scope="col" class="px-6 py-3">Nomor MCU</th>
-                                <th scope="col" class="px-6 py-3">Pasien</th>
-                                <th scope="col" class="px-6 py-3">Tanggal Periksa</th>
-                                <th scope="col" class="px-6 py-3">Masa Berlaku</th>
-                                <th scope="col" class="px-6 py-3">Kelayakan</th>
-                                <th scope="col" class="px-6 py-3 text-right">Tindakan</th>
+                                <th scope="col" class="px-4 py-3">Nomor MCU</th>
+                                <th scope="col" class="px-4 py-3">Pasien</th>
+                                <th scope="col" class="px-4 py-3">Tanggal Periksa</th>
+                                <th scope="col" class="px-4 py-3">Masa Berlaku</th>
+                                <th scope="col" class="px-4 py-3">Kelayakan</th>
+                                <th scope="col" class="px-4 py-3 text-right">Tindakan</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                             @foreach($pemeriksaanList as $mcu)
                                 <tr class="transition hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                                    <td class="whitespace-nowrap px-6 py-4 font-semibold text-slate-900 dark:text-white">
+                                    <td class="whitespace-nowrap px-4 py-3.5 font-semibold text-slate-900 dark:text-white">
                                         {{ $mcu->nomor_mcu }}
                                     </td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-4 py-3.5">
                                         <div class="font-medium text-slate-900 dark:text-white">
                                             {{ $mcu->pasien->nama ?? '-' }}
                                         </div>
@@ -191,13 +191,13 @@
                                             {{ $mcu->pasien->no_ktp ? 'NIK: ' . $mcu->pasien->no_ktp : ($mcu->pasien->no_paspor ? 'Paspor: ' . $mcu->pasien->no_paspor : '-') }}
                                         </div>
                                     </td>
-                                    <td class="whitespace-nowrap px-6 py-4 text-slate-600 dark:text-slate-300">
+                                    <td class="whitespace-nowrap px-4 py-3.5 text-slate-600 dark:text-slate-300">
                                         {{ $mcu->tanggal_periksa ? $mcu->tanggal_periksa->format('d/m/Y') : '-' }}
                                     </td>
-                                    <td class="whitespace-nowrap px-6 py-4 text-slate-600 dark:text-slate-300">
+                                    <td class="whitespace-nowrap px-4 py-3.5 text-slate-600 dark:text-slate-300">
                                         {{ $mcu->berlaku_sampai ? $mcu->berlaku_sampai->format('d/m/Y') : '-' }}
                                     </td>
-                                    <td class="whitespace-nowrap px-6 py-4">
+                                    <td class="whitespace-nowrap px-4 py-3.5">
                                         @if($mcu->status_kelayakan === 'FIT')
                                             <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                                                 <span class="size-1.5 rounded-full bg-emerald-500"></span>
@@ -214,7 +214,7 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="whitespace-nowrap px-6 py-4 text-right">
+                                    <td class="whitespace-nowrap px-4 py-3.5 text-right">
                                         <div class="inline-flex items-center justify-end gap-2">
                                             @if($mcu->token_verifikasi)
                                                 <a

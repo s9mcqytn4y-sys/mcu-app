@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
             return;
         }
 
-        // 1. Akun Pengguna Wira (Satu-satunya akun: Administrator & Penanggung Jawab Sistem)
+        // 1. Akun Pengguna Wira (Satu-satunya akun default: Administrator & Penanggung Jawab Sistem)
         User::firstOrCreate(
             ['username' => 'wira'],
             [
@@ -31,9 +31,5 @@ class UserSeeder extends Seeder
                 'aktif' => true,
             ]
         );
-        $user = User::where('username', 'wira')->first();
-        if ($user) {
-            $user->update(['password' => Hash::make('WiraIndosehat2026')]);
-        }
     }
 }

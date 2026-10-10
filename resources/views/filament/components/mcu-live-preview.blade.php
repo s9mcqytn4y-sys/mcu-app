@@ -1,14 +1,23 @@
 @php
+    /** @var ?\App\Models\PemeriksaanMcu $record */
+    $record = $record ?? null;
+    $status = $status ?? (isset($get) ? $get('status_kelayakan') : null) ?? ($record?->status_kelayakan ?? 'FIT');
+    $nama = $nama ?? (isset($get) ? $get('nama_pasien') : null) ?? ($record?->pasien?->nama ?? '-');
+    $perusahaan = $perusahaan ?? (isset($get) ? $get('nama_perusahaan') : null) ?? ($record?->nama_perusahaan ?? '-');
+    $verifyUrl = $verifyUrl ?? ($record?->token_verifikasi
+        ? route('mcu.verify', ['uuid' => $record->token_verifikasi])
+        : url('/v/preview-mcu-indosehat'));
+
     $qrAction = app(\App\Actions\Mcu\GenerateQrCodeAction::class);
     $qrSvg = $qrAction->generateSvgDataUri($verifyUrl);
-    $statusColor = strtoupper($status) === 'FIT' ? '#15803d' : '#b45343';
-    $statusBg = strtoupper($status) === 'FIT' ? '#dcfce7' : '#fee2e2';
+    $statusColor = strtoupper($status ?? 'FIT') === 'FIT' ? '#15803d' : '#b45343';
+    $statusBg = strtoupper($status ?? 'FIT') === 'FIT' ? '#dcfce7' : '#fee2e2';
 @endphp
 
 <div class="flex flex-col items-center p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
     <div class="mb-3">
         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary-50 text-primary-700 dark:bg-primary-950/60 dark:text-primary-300 border border-primary-200/50">
-            Real-time Verification Link
+            Pratinjau Kode QR
         </span>
     </div>
 
@@ -27,11 +36,11 @@
         </div>
         <div class="flex justify-between">
             <span class="text-slate-500 font-medium">Nama:</span>
-            <span class="font-bold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">{{ $nama }}</span>
+            <span class="font-bold text-slate-800 dark:text-slate-200 truncate max-w-37.5">{{ $nama }}</span>
         </div>
         <div class="flex justify-between">
             <span class="text-slate-500 font-medium">Perusahaan:</span>
-            <span class="text-slate-700 dark:text-slate-300 truncate max-w-[150px]">{{ $perusahaan }}</span>
+            <span class="text-slate-700 dark:text-slate-300 truncate max-w-37.5">{{ $perusahaan }}</span>
         </div>
     </div>
 
@@ -44,7 +53,7 @@
             href="{{ $verifyUrl }}" 
             target="_blank" 
             rel="noopener noreferrer"
-            class="inline-flex items-center justify-center w-full px-3 py-2 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-lg shadow-sm transition-colors"
+            class="inline-flex items-center justify-center w-full min-h-11 px-3 py-2 text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 rounded-lg shadow-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
         >
             Buka Halaman Verifikasi ↗
         </a>

@@ -22,10 +22,19 @@
 
 ## 3. UI/UX & Aksesibilitas (WCAG 2.2 AA)
 - Semantic HTML5 landmark (`<main>`, `<header>`, `<section>`, `<article>`, `<aside>`, `<footer>`).
-- Target sentuh minimal 44x44px untuk perangkat mobile.
-- Focus-visible ring yang jelas dan rasio kontras warna tinggi (di atas 4.5:1).
+- Target sentuh minimal 44x44px (`min-h-11`) untuk perangkat mobile pada tombol dan link aksi.
+- Focus-visible ring yang jelas dan rasio kontras warna tinggi (di atas 4.5:1) pada light mode dan dark mode.
 - Desain antislop: tipografi bersih, layout profesional klinis, tanpa ornamen berlebih.
+- **Form Ergonomics & Key Bindings**:
+  - `autofocus()` aktif pada field pertama form rekam medis (`nama_pasien`).
+  - Disable browser autocomplete yang mengganggu pada form medis (`->autocomplete('off')`).
+  - Shortcut keyboard cepat: `Ctrl+S` / `Cmd+S` untuk simpan/terbitkan, `Esc` untuk batal.
+  - Optimal virtual keyboard: `inputmode => numeric` untuk NIK/KTP.
+- **Tailwind v4 & Filament Theme**:
+  - Tema panel didaftarkan via `->viteTheme('resources/css/app.css')`.
+  - Direktori views dan Filament disertakan dalam pemindaian via `@source` di `app.css`.
 
 ## 4. Testing & QA
 - Setiap perubahan pada domain MCU wajib diverifikasi dengan `php artisan test`.
 - Testing menggunakan konfigurasi in-memory SQLite yang terisolasi.
+- Kompilasi aset Vite divalidasi dengan `npm run build`.

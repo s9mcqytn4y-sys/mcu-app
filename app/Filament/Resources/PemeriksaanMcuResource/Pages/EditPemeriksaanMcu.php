@@ -31,6 +31,20 @@ class EditPemeriksaanMcu extends EditRecord
         return 'Data pemeriksaan MCU berhasil diperbarui';
     }
 
+    protected function getSaveFormAction(): \Filament\Actions\Action
+    {
+        return parent::getSaveFormAction()
+            ->keyBindings(['mod+s'])
+            ->label('Simpan Perubahan (Ctrl+S)');
+    }
+
+    protected function getCancelFormAction(): \Filament\Actions\Action
+    {
+        return parent::getCancelFormAction()
+            ->keyBindings(['escape'])
+            ->label('Batal (Esc)');
+    }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->record->loadMissing(['pasien', 'lampiranMcu']);

@@ -85,11 +85,7 @@
             <footer class="mt-auto border-t border-gray-200 bg-white px-4 py-6 text-center text-sm text-gray-500 shadow-inner dark:border-white/10 dark:bg-gray-900 dark:text-gray-400 md:px-6 lg:px-8">
                 {{ \Filament\Support\Facades\FilamentView::renderHook(\Filament\View\PanelsRenderHook::FOOTER, scopes: $livewire?->getRenderHookScopes()) }}
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <p>&copy; {{ date('Y') }} <strong>Klinik Indosehat 2003</strong>. Semua Hak Cipta Dilindungi.</p>
-                    <nav class="flex gap-4" aria-label="Footer Navigation">
-                        <a href="#" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Bantuan</a>
-                        <a href="#" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Kontak Kami</a>
-                    </nav>
+                    <p>&copy; 2026 <strong>Klinik Indosehat 2003</strong>. Seluruh hak cipta dilindungi.</p>
                 </div>
             </footer>
         </div>
