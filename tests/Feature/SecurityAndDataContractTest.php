@@ -309,6 +309,8 @@ class SecurityAndDataContractTest extends TestCase
      */
     public function test_pesan_kegagalan_autentikasi_menggunakan_bahasa_indonesia(): void
     {
+        app()->setLocale('id');
+
         $this->assertSame(
             'Nama pengguna/email atau kata sandi tidak valid.',
             trans('auth.failed')
