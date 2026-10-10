@@ -7,7 +7,7 @@
 MCU App adalah platform manajemen dan verifikasi keabsahan dokumen Medical Check-Up (MCU) yang dirancang khusus untuk memenuhi standar operasional maritim dan ketenagakerjaan berintegritas tinggi. Dilengkapi dengan portal verifikasi publik bilingual (ID/EN) yang ramah aksesibilitas (WCAG 2.2 AA compliant, Semantic HTML5) dan Panel Manajemen Staf/Administrator berbasis **Filament v3**.
 
 ### 🛠️ Tech Stack Utama
-- **Backend & Framework**: PHP 8.2+ (Strict Typing), Laravel 13.x
+- **Backend & Framework**: PHP 8.3+ (Strict Typing), Laravel 13.x
 - **Admin Panel & Interactivity**: Filament v3, Livewire v3, Alpine.js
 - **Frontend / Portal Publik**: Semantic HTML5, Tailwind CSS v4, Vanilla CSS Custom Variables
 - **Database**: MySQL 8.x / MariaDB (Mendukung fallback SQLite 3.x)
@@ -39,17 +39,11 @@ Sistem memisahkan tanggung jawab operasional menjadi dua peran utama:
    - Penerbitan sertifikat QR code dan cetak tanda bukti.
    - Tidak memiliki izin mengelola akun pengguna atau menghapus log audit.
 
-### Kredensial Default (Seeder Lokal)
-- **Akun Administrator**:
-  - Username: `wira` (atau `admin`)
-  - Email: `wira@indosehat2003.com` (atau `admin@indosehat2003.com`)
-  - Password: `password`
-- **Akun Staf**:
-  - Username: `staff`
-  - Email: `staff@indosehat2003.com`
-  - Password: `password`
+### Akun Pengembangan
+Seeder akun hanya untuk pengembangan dan sengaja tidak berjalan pada `APP_ENV=production`.
+Jangan memakai akun/password contoh pada lingkungan nyata. Buat administrator produksi melalui prosedur provisioning yang aman, dan ganti kredensial jika seed pernah dijalankan pada server publik.
 
-*Catatan: Login Filament panel mendukung autentikasi fleksibel menggunakan **Username ATAU Email**.*
+*Login Filament mendukung username atau email.*
 
 ---
 
@@ -75,15 +69,67 @@ npm install && npm run build
 cp .env.example .env
 php artisan key:generate
 
-# 4. Jalankan Migrasi & Seeder
+# 4. Periksa driver database PHP (tanpa mencetak password)
+php scripts/check-database-driver.php
+# Atau: composer doctor
+
+# 5. Jalankan Migrasi & Seeder (khusus database baru/pengembangan)
 php artisan migrate --seed
 
-# 5. Hubungkan symlink storage
+# 6. Hubungkan symlink hanya bila ada aset publik yang membutuhkannya
+# Jangan simpan berkas medis di storage/app/public
 php artisan storage:link
 
-# 6. Jalankan Server Lokal
+# 7. Jalankan Server Lokal
 php artisan serve
 ```
+
+---
+
+## 🛠 Troubleshooting Windows: Laravel `could not find driver` (MySQL)
+
+Jika muncul `PDOException: could not find driver` ketika Laravel membaca tabel `sessions`,
+masalah utamanya biasanya **PHP yang menjalankan aplikasi tidak memuat ekstensi `pdo_mysql`**.
+Ini adalah konfigurasi runtime PHP lokal, **bukan bug query Laravel atau migrasi database**.
+`SESSION_DRIVER=database` membuat kegagalan driver langsung terlihat pada request pertama.
+
+Di PowerShell, jalankan dari root proyek:
+
+```powershell
+Get-Command php -All
+where.exe php
+php -v
+php --ini
+php -m | findstr /I "PDO pdo_mysql mysqli"
+php -r "print_r(PDO::getAvailableDrivers());"
+php scripts/check-database-driver.php
+# Alternatif yang sama: composer doctor
+```
+
+Jika `pdo_mysql` belum muncul:
+1. Buka **Loaded Configuration File** yang ditampilkan oleh `php --ini`, bukan sembarang `php.ini`.
+2. Cari dan aktifkan `extension=pdo_mysql` (hilangkan awalan `;` bila ada).
+3. Pastikan `extension_dir` mengarah ke folder ekstensi instalasi PHP yang aktif dan `php_pdo_mysql.dll` tersedia serta cocok dengan versi/build PHP tersebut.
+4. Simpan `php.ini`, **hentikan server PHP lama**, dan jalankan kembali `php artisan serve`. Jika memakai web server lain, cek konfigurasi PHP server itu secara terpisah.
+5. Verifikasi ulang:
+
+```powershell
+php -r "var_dump(extension_loaded('pdo_mysql'));"
+php scripts/check-database-driver.php
+php artisan migrate:status
+php artisan serve
+```
+
+Target pemeriksaan ekstensi: `bool(true)`. Jika setelah itu muncul `Connection refused` atau
+`Access denied`, berarti driver sudah teratasi namun layanan MySQL, host, port, akun, atau database perlu diperiksa.
+Jangan kirim nilai `APP_KEY`, `DB_PASSWORD`, atau cookie sesi saat membagikan log.
+
+**Penting:**
+- Jangan mengganti `DB_CONNECTION` ke SQLite hanya untuk menyembunyikan error ketika data asli ada di MySQL.
+- Mengubah `SESSION_DRIVER=file` hanya menunda kegagalan pada operasi DB lain; itu bukan perbaikan driver.
+- Jangan menjalankan `php artisan migrate:fresh` pada database berisi data: perintah ini menghapus tabel.
+- Jalankan `php artisan optimize:clear` dan cek kembali setelah ekstensi berhasil dimuat bila konfigurasi Laravel pernah di-cache.
+- Preflight memeriksa **PHP CLI**, bukan konektivitas MySQL atau PHP yang dijalankan web server lain.
 
 ---
 
@@ -158,9 +204,9 @@ cp database/database.sqlite database/backups/database_$(date +%Y%m%d).sqlite
    DB_USERNAME=root
    DB_PASSWORD=
    ```
-4. Jalankan migrasi:
+4. Jalankan migrasi (tidak menghapus tabel yang sudah ada):
    ```bash
-   php artisan migrate:fresh --seed
+   php artisan migrate
    ```
 
 ---
