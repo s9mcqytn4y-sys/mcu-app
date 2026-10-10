@@ -93,6 +93,20 @@ class SecurityAndDataContractTest extends TestCase
 
         $viewResponse = $this->get('/v/' . $uuid . '/file/0/view');
         $viewResponse->assertStatus(403);
+
+        // Pengguna terautentikasi tanpa peran staf atau administrator juga wajib ditolak (403 Forbidden)
+        $userBukanStaf = User::create([
+            'username' => 'user_luar',
+            'name' => 'User Non Medis',
+            'email' => 'nonmedis@example.com',
+            'password' => bcrypt('password123'),
+            'peran' => 'user_umum',
+            'aktif' => true,
+        ]);
+
+        $this->actingAs($userBukanStaf)
+            ->get('/v/' . $uuid . '/file/0/download')
+            ->assertStatus(403);
     }
 
     /**

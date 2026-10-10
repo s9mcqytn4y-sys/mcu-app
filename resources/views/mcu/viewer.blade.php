@@ -474,11 +474,12 @@
                     'UNFIT' => 'badge-unfit',
                     default => 'badge-custom'
                 };
+                $isExpired = $pemeriksaan->berlaku_sampai && $pemeriksaan->berlaku_sampai->isPast();
             @endphp
 
             @if($pemeriksaan->status_kelayakan)
-                <div class="badge-status {{ $badgeClass }}">
-                    {{ $statusUpper }}
+                <div class="badge-status {{ $isExpired ? 'badge-unfit' : $badgeClass }}">
+                    {{ $statusUpper }} {{ $isExpired ? '• KEDALUWARSA (EXPIRED)' : '' }}
                 </div>
             @else
                 <div class="badge-status" style="background-color: var(--color-neutral-500);">-</div>
@@ -493,7 +494,7 @@
                     <span style="font-weight: 700; font-size: 0.9rem; color: #16364A;">Arsip Rekam Medis Terproteksi</span>
                 </div>
                 <p style="margin: 0; font-size: 0.8rem; color: #64748b; line-height: 1.5;">
-                    Sesuai UU PDP No. 27/2022 dan Permenkes No. 24/2022 tentang Rekam Medis, berkas fisik hasil pemeriksaan disimpan dalam repositori terenkripsi dan hanya dapat diakses oleh petugas medis berwenang.
+                    Sesuai UU PDP No. 27/2022 dan Permenkes No. 24/2022 tentang Rekam Medis, berkas fisik hasil pemeriksaan disimpan dalam arsip rekam medis privat terisolasi dan hanya dapat diakses oleh petugas medis berwenang.
                 </p>
             </div>
 

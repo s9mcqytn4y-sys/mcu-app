@@ -47,6 +47,18 @@ class GenerateNomorMcuAction
     {
         $tahunTarget = $tahun ?? (int) date('Y');
 
+        // Inisialisasi baris tahun secara aman (idempotent / aman dari duplicate-key race condition)
+        $hitungEksisting = PemeriksaanMcu::whereYear('tanggal_periksa', $tahunTarget)
+            ->orWhereYear('created_at', $tahunTarget)
+            ->count();
+
+        DB::table('nomor_mcu_sekuens')->insertOrIgnore([
+            'tahun' => $tahunTarget,
+            'sekuens_terakhir' => $hitungEksisting,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
         return DB::transaction(function () use ($tahunTarget): string {
             /** @var object{tahun: int, sekuens_terakhir: int}|null $sekuens */
             $sekuens = DB::table('nomor_mcu_sekuens')
@@ -54,25 +66,7 @@ class GenerateNomorMcuAction
                 ->lockForUpdate()
                 ->first();
 
-            if (!$sekuens) {
-                // Inisialisasi basis nomor dari data riil pemeriksaan_mcu bila ada
-                $hitungEksisting = PemeriksaanMcu::whereYear('tanggal_periksa', $tahunTarget)
-                    ->orWhereYear('created_at', $tahunTarget)
-                    ->count();
-
-                $sekuensAwal = $hitungEksisting + 1;
-
-                DB::table('nomor_mcu_sekuens')->insert([
-                    'tahun' => $tahunTarget,
-                    'sekuens_terakhir' => $sekuensAwal,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-
-                return sprintf('%04d/MCU-KIS/%d', $sekuensAwal, $tahunTarget);
-            }
-
-            $sekuensBaru = ((int) $sekuens->sekuens_terakhir) + 1;
+            $sekuensBaru = ((int) ($sekuens->sekuens_terakhir ?? 0)) + 1;
 
             DB::table('nomor_mcu_sekuens')
                 ->where('tahun', $tahunTarget)

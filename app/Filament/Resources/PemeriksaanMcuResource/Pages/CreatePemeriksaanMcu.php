@@ -14,13 +14,15 @@ class CreatePemeriksaanMcu extends CreateRecord
 {
     protected static string $resource = PemeriksaanMcuResource::class;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
-        $data['nomor_mcu'] = app(\App\Actions\Mcu\GenerateNomorMcuAction::class)->generate();
-        $data['token_verifikasi'] = (string) Str::uuid();
-        $data['dibuat_oleh'] = \Illuminate\Support\Facades\Auth::id() ?? 1;
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
+            $data['nomor_mcu'] = app(\App\Actions\Mcu\GenerateNomorMcuAction::class)->generate();
+            $data['token_verifikasi'] = (string) Str::uuid();
+            $data['dibuat_oleh'] = \Illuminate\Support\Facades\Auth::id() ?? 1;
 
-        return $data;
+            return static::getModel()::create($data);
+        });
     }
 
     protected function afterCreate(): void

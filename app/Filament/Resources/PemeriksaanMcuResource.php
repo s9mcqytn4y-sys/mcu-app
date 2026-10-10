@@ -70,8 +70,13 @@ class PemeriksaanMcuResource extends Resource
                                         ->native(false),
                                     TextInput::make('no_ktp')
                                         ->label('Nomor KTP / NIK')
-                                        ->maxLength(30)
-                                        ->unique(\App\Models\Pasien::class, 'no_ktp'),
+                                        ->length(16)
+                                        ->regex('/^[0-9]{16}$/')
+                                        ->validationMessages([
+                                            'regex' => 'Nomor KTP / NIK wajib terdiri dari tepat 16 digit angka.',
+                                        ])
+                                        ->unique(\App\Models\Pasien::class, 'no_ktp')
+                                        ->helperText('Wajib tepat 16 digit angka sesuai KTP/e-KTP.'),
                                     TextInput::make('no_paspor')
                                         ->label('Nomor Paspor')
                                         ->maxLength(30)
@@ -91,7 +96,6 @@ class PemeriksaanMcuResource extends Resource
                                     ->label('Nomor Sertifikat MCU')
                                     ->required()
                                     ->maxLength(100)
-                                    ->unique(ignoreRecord: true)
                                     ->default(fn () => app(\App\Actions\Mcu\GenerateNomorMcuAction::class)->generatePreview())
                                     ->helperText('Nomor MCU resmi diterbitkan berurutan secara transaksional.')
                                     ->readOnly(),
@@ -148,7 +152,6 @@ class PemeriksaanMcuResource extends Resource
                                     'UNFIT' => 'heroicon-m-x-circle',
                                 ])
                                 ->inline()
-                                ->default('FIT')
                                 ->required(),
 
                             TextInput::make('catatan')
