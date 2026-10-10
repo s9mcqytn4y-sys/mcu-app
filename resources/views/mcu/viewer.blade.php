@@ -36,16 +36,16 @@
 
     <style>
         :root {
-            --color-primary: #0284c7;
-            --color-primary-dark: #0369a1;
-            --color-success: #16a34a;
-            --color-danger: #dc2626;
-            --color-warning: #d97706;
-            --color-neutral-900: #111827;
-            --color-neutral-700: #374151;
-            --color-neutral-500: #6b7280;
-            --color-neutral-200: #e5e7eb;
-            --color-neutral-50: #f9fafb;
+            --color-primary: #287B85; /* Muted Clinical Teal */
+            --color-primary-dark: #16364A; /* Dark Slate */
+            --color-success: #15803D; /* Medical Green */
+            --color-danger: #B45343; /* Alert Crimson */
+            --color-warning: #D97706;
+            --color-neutral-900: #0F172A;
+            --color-neutral-700: #334155;
+            --color-neutral-500: #64748B;
+            --color-neutral-200: #E2E8F0;
+            --color-neutral-50: #F8FAFC;
         }
 
         *, *::before, *::after {
@@ -56,7 +56,7 @@
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f3f4f6;
+            background-color: #f1f5f9;
             color: var(--color-neutral-900);
             display: flex;
             justify-content: center;
@@ -90,7 +90,7 @@
             margin: 14px 0 4px;
             font-size: 1.15rem;
             font-weight: 700;
-            color: #0f172a;
+            color: var(--color-primary-dark);
             letter-spacing: -0.01em;
         }
 
@@ -236,7 +236,7 @@
             text-decoration: none;
             color: #ffffff;
             background-color: var(--color-primary);
-            box-shadow: 0 4px 10px -2px rgba(2, 132, 199, 0.3);
+            box-shadow: 0 4px 10px -2px rgba(40, 123, 133, 0.3);
             transition: background-color 0.2s ease, transform 0.1s ease;
         }
 
@@ -251,12 +251,58 @@
         }
 
         .btn-preview {
-            background-color: #0f766e;
-            box-shadow: 0 4px 10px -2px rgba(15, 118, 110, 0.3);
+            background-color: var(--color-primary-dark);
+            box-shadow: 0 4px 10px -2px rgba(22, 54, 74, 0.3);
         }
 
         .btn-preview:hover {
-            background-color: #115e59;
+            background-color: #0f2735;
+        }
+
+        /* Responsivitas Mobile: Vertical Stack untuk Label-Value (<640px) */
+        @media (max-width: 639px) {
+            .table-meta,
+            .table-meta tbody,
+            .table-meta tr,
+            .table-meta td {
+                display: block;
+                width: 100% !important;
+            }
+
+            .table-meta tr {
+                padding: 12px 0;
+            }
+
+            .table-meta td.colon-col {
+                display: none;
+            }
+
+            .table-meta td.label-col {
+                padding: 0 0 4px 0;
+            }
+
+            .table-meta td.value-col {
+                padding: 0 0 4px 0;
+                font-size: 1.05rem;
+                font-weight: 700;
+                color: var(--color-neutral-900);
+            }
+
+            .content-body {
+                padding: 16px;
+            }
+
+            .header-brand {
+                padding: 20px 16px 16px;
+            }
+
+            .result-section {
+                padding: 16px 12px;
+            }
+
+            .btn-attachment {
+                max-width: 100%;
+            }
         }
 
         .validity-box {

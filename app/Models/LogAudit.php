@@ -57,6 +57,40 @@ class LogAudit extends Model
     }
 
     /**
+     * Relasi alias kompatibilitas untuk pengguna.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->pengguna();
+    }
+
+    /**
+     * Accessor alias untuk tindakan (aksi).
+     */
+    public function getAksiAttribute(): ?string
+    {
+        return $this->tindakan;
+    }
+
+    /**
+     * Accessor alias untuk tipe_model (tipe_entitas).
+     */
+    public function getTipeEntitasAttribute(): ?string
+    {
+        return $this->tipe_model;
+    }
+
+    /**
+     * Accessor alias untuk agen_pengguna (user_agent).
+     */
+    public function getUserAgentAttribute(): ?string
+    {
+        return $this->agen_pengguna;
+    }
+
+    /**
      * Helper statis untuk mencatat entri log audit secara konsisten.
      * Mendukung pemanggilan tradisional maupun named arguments (aksi, model).
      *

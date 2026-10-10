@@ -43,11 +43,12 @@ class McuViewerController extends Controller
     }
 
     /**
-     * Mengambil path berkas fisik lampiran berdasarkan token pemeriksaan dan indeks lampiran.
+     * Mengambil path berkas fisik lampiran secara aman.
+     * Mendukung disk privat utama serta fallback disk publik untuk data lama.
      */
-    protected function getAttachmentFilePath(string $uuid, int $index): string
+    protected function getAttachmentFilePath(string $uuid, int $index): array
     {
-        $pemeriksaan = PemeriksaanMcu::with('lampiranMcu')
+        $pemeriksaan = PemeriksaanMcu::with(['pasien', 'lampiranMcu'])
             ->where('token_verifikasi', $uuid)
             ->firstOrFail();
 
@@ -57,36 +58,76 @@ class McuViewerController extends Controller
             abort(404, 'Lampiran pemeriksaan MCU tidak ditemukan.');
         }
 
-        $path = Storage::disk('public')->path($lampiran->path_berkas);
+        $relativePath = ltrim($lampiran->path_berkas, '/\\');
+        
+        // Cek disk privat/lokal terlebih dahulu
+        $disk = Storage::disk('local')->exists($relativePath) ? 'local' : (Storage::disk('public')->exists($relativePath) ? 'public' : null);
 
-        if (! File::exists($path)) {
+        if (! $disk) {
             abort(404, 'Berkas fisik lampiran tidak ditemukan di penyimpanan server.');
         }
 
-        return $path;
+        $fullPath = Storage::disk($disk)->path($relativePath);
+
+        // Pencegahan path traversal
+        $realPath = realpath($fullPath);
+        if ($realPath === false || ! file_exists($realPath)) {
+            abort(404, 'Akses berkas tidak valid atau berkas tidak tersedia.');
+        }
+
+        return [$realPath, $lampiran, $pemeriksaan];
     }
 
     /**
-     * Membuka dan menampilkan berkas lampiran langsung di peramban (inline PDF/Gambar).
+     * Membuka dan menampilkan berkas lampiran langsung di peramban (inline PDF/Gambar) dengan audit log.
      */
     public function viewFile(string $uuid, int $index): BinaryFileResponse
     {
-        $path = $this->getAttachmentFilePath($uuid, $index);
+        [$path, $lampiran, $pemeriksaan] = $this->getAttachmentFilePath($uuid, $index);
         $mimeType = File::mimeType($path) ?: 'application/octet-stream';
+        $safeFilename = basename($path);
+
+        LogAudit::rekam(
+            tindakan: 'LIHAT_LAMPIRAN_MCU',
+            tipeModel: PemeriksaanMcu::class,
+            idModel: $pemeriksaan->id,
+            rincian: [
+                'token' => $uuid,
+                'nomor_mcu' => $pemeriksaan->nomor_mcu,
+                'lampiran_id' => $lampiran->id,
+                'nama_berkas' => $lampiran->nama_berkas ?? $safeFilename,
+            ]
+        );
 
         return response()->file($path, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            'Content-Disposition' => 'inline; filename="' . addslashes($safeFilename) . '"',
+            'X-Content-Type-Options' => 'nosniff',
         ]);
     }
 
     /**
-     * Mengunduh berkas fisik lampiran MCU.
+     * Mengunduh berkas fisik lampiran MCU dengan audit log.
      */
     public function downloadFile(string $uuid, int $index): BinaryFileResponse
     {
-        $path = $this->getAttachmentFilePath($uuid, $index);
+        [$path, $lampiran, $pemeriksaan] = $this->getAttachmentFilePath($uuid, $index);
+        $safeFilename = basename($path);
 
-        return response()->download($path);
+        LogAudit::rekam(
+            tindakan: 'UNDUH_LAMPIRAN_MCU',
+            tipeModel: PemeriksaanMcu::class,
+            idModel: $pemeriksaan->id,
+            rincian: [
+                'token' => $uuid,
+                'nomor_mcu' => $pemeriksaan->nomor_mcu,
+                'lampiran_id' => $lampiran->id,
+                'nama_berkas' => $lampiran->nama_berkas ?? $safeFilename,
+            ]
+        );
+
+        return response()->download($path, $safeFilename, [
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 }

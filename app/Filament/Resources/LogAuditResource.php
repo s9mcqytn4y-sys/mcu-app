@@ -38,19 +38,23 @@ class LogAuditResource extends Resource
                 Section::make('Rincian Log Audit Keamanan')
                     ->description('Catatan audit immutable aktivitas pengguna.')
                     ->schema([
-                        TextInput::make('user.name')
-                            ->label('Pengguna (User)'),
+                        TextInput::make('pengguna.name')
+                            ->label('Pengguna (User)')
+                            ->placeholder('Sistem / Tamu'),
 
-                        TextInput::make('aksi')
-                            ->label('Aksi Operasi'),
+                        TextInput::make('tindakan')
+                            ->label('Tindakan Operasi'),
 
-                        TextInput::make('tipe_entitas')
-                            ->label('Tipe Entitas'),
+                        TextInput::make('tipe_model')
+                            ->label('Tipe Model / Entitas'),
+
+                        TextInput::make('id_model')
+                            ->label('ID Model Terkait'),
 
                         TextInput::make('alamat_ip')
                             ->label('Alamat IP'),
 
-                        TextInput::make('user_agent')
+                        TextInput::make('agen_pengguna')
                             ->label('Peramban (User Agent)')
                             ->columnSpanFull(),
 
@@ -70,19 +74,19 @@ class LogAuditResource extends Resource
                     ->dateTime('d/m/Y H:i:s')
                     ->sortable(),
 
-                TextColumn::make('user.name')
+                TextColumn::make('pengguna.name')
                     ->label('Pelaku')
                     ->searchable()
-                    ->placeholder('Sistem / Tamu'),
+                    ->placeholder('Sistem / Publik'),
 
-                TextColumn::make('aksi')
-                    ->label('Aksi')
+                TextColumn::make('tindakan')
+                    ->label('Tindakan')
                     ->searchable()
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'pemeriksaan_mcu_dibuat' => 'success',
                         'pemeriksaan_mcu_diperbarui' => 'warning',
-                        'portal_mcu_diverifikasi' => 'info',
+                        'AKSES_VERIFIKASI_MCU', 'portal_mcu_diverifikasi' => 'info',
                         'lampiran_mcu_diunduh' => 'primary',
                         default => 'gray',
                     }),
@@ -92,7 +96,7 @@ class LogAuditResource extends Resource
                     ->searchable()
                     ->fontFamily('mono'),
 
-                TextColumn::make('tipe_entitas')
+                TextColumn::make('tipe_model')
                     ->label('Model Terkait')
                     ->formatStateUsing(fn (?string $state): string => class_basename((string) $state)),
             ])
