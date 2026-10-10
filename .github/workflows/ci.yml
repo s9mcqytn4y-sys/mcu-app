@@ -17,7 +17,7 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo, sqlite3, pdo_sqlite, gd, zip
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_mysql, sqlite3, pdo_sqlite, gd, zip
         coverage: none
 
     - name: Setup Node.js
@@ -38,6 +38,11 @@ jobs:
         cp .env.example .env
         php artisan key:generate
         touch database/database.sqlite
+
+    - name: Check PHP database drivers (SQLite and MySQL)
+      run: |
+        php scripts/check-database-driver.php
+        DB_CONNECTION=mysql php scripts/check-database-driver.php
 
     - name: Run Migrations
       run: php artisan migrate --force
