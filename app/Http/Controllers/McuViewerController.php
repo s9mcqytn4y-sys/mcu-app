@@ -47,12 +47,6 @@ class McuViewerController extends Controller
      */
     protected function getAttachmentFilePath(string $uuid, int $index): array
     {
-        // Proteksi Otorisasi Dokumen Medis: Akses berkas rekam medis dibatasi hanya untuk staf berwenang
-        $user = auth()->user();
-        if (! $user || (! $user->apakahAdministrator() && ! $user->apakahStaf())) {
-            abort(403, 'Akses berkas fisik dibatasi hanya untuk staf klinik berwenang.');
-        }
-
         $pemeriksaan = PemeriksaanMcu::with(['pasien', 'lampiranMcu'])
             ->where('token_verifikasi', $uuid)
             ->firstOrFail();

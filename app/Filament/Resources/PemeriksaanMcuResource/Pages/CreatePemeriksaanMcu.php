@@ -17,11 +17,36 @@ class CreatePemeriksaanMcu extends CreateRecord
     protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
         return \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
+            // Sinkronisasi data pasien (Cari berdasarkan NIK atau buat baru, perbarui jika sudah ada)
+            $pasien = \App\Models\Pasien::updateOrCreate(
+                ['no_ktp' => $data['no_ktp']],
+                [
+                    'nama' => $data['nama_pasien'],
+                    'jenis_kelamin' => $data['jenis_kelamin'],
+                    'tanggal_lahir' => $data['tanggal_lahir'],
+                    'no_paspor' => $data['no_paspor'] ?? null,
+                ]
+            );
+
+            $lampiranPath = $data['lampiran_file'] ?? null;
+            unset($data['nama_pasien'], $data['jenis_kelamin'], $data['tanggal_lahir'], $data['no_ktp'], $data['no_paspor'], $data['lampiran_file']);
+
+            $data['pasien_id'] = $pasien->id;
             $data['nomor_mcu'] = app(\App\Actions\Mcu\GenerateNomorMcuAction::class)->generate();
             $data['token_verifikasi'] = (string) Str::uuid();
             $data['dibuat_oleh'] = \Illuminate\Support\Facades\Auth::id() ?? 1;
 
-            return static::getModel()::create($data);
+            /** @var \App\Models\PemeriksaanMcu $record */
+            $record = static::getModel()::create($data);
+
+            if (! empty($lampiranPath)) {
+                $record->lampiranMcu()->create([
+                    'path_berkas' => $lampiranPath,
+                    'jenis_lampiran' => 'sertifikat',
+                ]);
+            }
+
+            return $record;
         });
     }
 

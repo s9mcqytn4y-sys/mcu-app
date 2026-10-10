@@ -6,6 +6,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\LogAuditResource\Pages;
 use App\Models\LogAudit;
+use App\Models\User;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -15,6 +16,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 
 class LogAuditResource extends Resource
 {
@@ -25,6 +27,13 @@ class LogAuditResource extends Resource
     protected static ?string $pluralModelLabel = 'Daftar Log Audit';
     protected static ?string $navigationGroup = 'Keamanan & Tata Kelola';
     protected static ?int $navigationSort = 3;
+
+    public static function canAccess(): bool
+    {
+        /** @var User|null $user */
+        $user = Auth::user();
+        return $user !== null && $user->apakahAdministrator();
+    }
 
     public static function canCreate(): bool
     {

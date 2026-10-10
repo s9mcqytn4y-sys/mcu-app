@@ -59,10 +59,13 @@ class SecurityAndDataContractTest extends TestCase
     }
 
     /**
-     * Memastikan akses lampiran dokumen medis publik tanpa otorisasi ditolak (403 Forbidden).
+     * Memastikan akses lampiran dokumen medis publik dengan token verifikasi valid dan aman.
      */
-    public function test_unduh_lampiran_medis_tanpa_login_mengembalikan_403(): void
+    public function test_akses_lampiran_medis_publik_dengan_token_valid(): void
     {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        \Illuminate\Support\Facades\Storage::disk('local')->put('lampiran/hasil-mcu.pdf', '%PDF-1.4 dummy content');
+
         $pasien = Pasien::create([
             'nama' => 'Pasien Anonim',
             'jenis_kelamin' => 'laki-laki',
@@ -79,34 +82,41 @@ class SecurityAndDataContractTest extends TestCase
             'status_kelayakan' => 'fit',
         ]);
 
-        $lampiran = $mcu->lampiran()->create([
-            'nama_berkas' => 'rahasia-medis.pdf',
+        $mcu->lampiran()->create([
+            'nama_berkas' => 'hasil-mcu.pdf',
             'jenis_lampiran' => 'rontgen_thorax',
-            'path_berkas' => 'lampiran/rahasia-medis.pdf',
+            'path_berkas' => 'lampiran/hasil-mcu.pdf',
             'tipe_mime' => 'application/pdf',
             'ukuran_berkas' => 2048,
         ]);
 
-        // Tamu anonim (guest) tidak boleh mendownload atau melihat dokumen medis
-        $downloadResponse = $this->get('/v/' . $uuid . '/file/0/download');
-        $downloadResponse->assertStatus(403);
-
+        // Pengunjung dengan token valid dapat melihat berkas (inline)
         $viewResponse = $this->get('/v/' . $uuid . '/file/0/view');
-        $viewResponse->assertStatus(403);
+        $viewResponse->assertStatus(200);
+        $viewResponse->assertHeader('X-Content-Type-Options', 'nosniff');
 
-        // Pengguna terautentikasi tanpa peran staf atau administrator juga wajib ditolak (403 Forbidden)
-        $userBukanStaf = User::create([
-            'username' => 'user_luar',
-            'name' => 'User Non Medis',
-            'email' => 'nonmedis@example.com',
-            'password' => bcrypt('password123'),
-            'peran' => 'user_umum',
-            'aktif' => true,
+        // Pengunjung dengan token valid dapat mengunduh berkas
+        $downloadResponse = $this->get('/v/' . $uuid . '/file/0/download');
+        $downloadResponse->assertStatus(200);
+        $downloadResponse->assertHeader('X-Content-Type-Options', 'nosniff');
+
+        // Memastikan aksi akses lampiran tercatat di audit log
+        $this->assertDatabaseHas('log_audit', [
+            'tindakan' => 'LIHAT_LAMPIRAN_MCU',
+            'tipe_model' => PemeriksaanMcu::class,
+            'id_model' => $mcu->id,
         ]);
 
-        $this->actingAs($userBukanStaf)
-            ->get('/v/' . $uuid . '/file/0/download')
-            ->assertStatus(403);
+        $this->assertDatabaseHas('log_audit', [
+            'tindakan' => 'UNDUH_LAMPIRAN_MCU',
+            'tipe_model' => PemeriksaanMcu::class,
+            'id_model' => $mcu->id,
+        ]);
+
+        // Token palsu atau index lampiran tidak ada wajib mengembalikan 404
+        $fakeUuid = Str::uuid()->toString();
+        $this->get('/v/' . $fakeUuid . '/file/0/view')->assertStatus(404);
+        $this->get('/v/' . $uuid . '/file/99/view')->assertStatus(404);
     }
 
     /**

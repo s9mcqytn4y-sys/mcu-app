@@ -22,6 +22,54 @@ class EditPemeriksaanMcu extends EditRecord
         ];
     }
 
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $this->record->loadMissing(['pasien', 'lampiranMcu']);
+
+        $data['nama_pasien'] = $this->record->pasien?->nama;
+        $data['jenis_kelamin'] = $this->record->pasien?->jenis_kelamin;
+        $data['tanggal_lahir'] = $this->record->pasien?->tanggal_lahir?->format('Y-m-d');
+        $data['no_ktp'] = $this->record->pasien?->no_ktp;
+        $data['no_paspor'] = $this->record->pasien?->no_paspor;
+        $data['lampiran_file'] = $this->record->lampiranMcu?->first()?->path_berkas;
+
+        return $data;
+    }
+
+    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    {
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($record, $data) {
+            if ($record->pasien) {
+                $record->pasien->update([
+                    'nama' => $data['nama_pasien'],
+                    'jenis_kelamin' => $data['jenis_kelamin'],
+                    'tanggal_lahir' => $data['tanggal_lahir'],
+                    'no_ktp' => $data['no_ktp'],
+                    'no_paspor' => $data['no_paspor'] ?? null,
+                ]);
+            }
+
+            $lampiranPath = $data['lampiran_file'] ?? null;
+            unset($data['nama_pasien'], $data['jenis_kelamin'], $data['tanggal_lahir'], $data['no_ktp'], $data['no_paspor'], $data['lampiran_file']);
+
+            if (! empty($lampiranPath)) {
+                $lampiran = $record->lampiranMcu()->first();
+                if ($lampiran) {
+                    $lampiran->update(['path_berkas' => $lampiranPath]);
+                } else {
+                    $record->lampiranMcu()->create([
+                        'path_berkas' => $lampiranPath,
+                        'jenis_lampiran' => 'sertifikat',
+                    ]);
+                }
+            }
+
+            $record->update($data);
+
+            return $record;
+        });
+    }
+
     protected function afterSave(): void
     {
         LogAudit::rekam(

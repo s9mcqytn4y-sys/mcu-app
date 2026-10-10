@@ -39,169 +39,149 @@ class PemeriksaanMcuResource extends Resource
     {
         return $form
             ->schema([
-                Wizard::make([
-                    Wizard\Step::make('Identitas Pasien')
-                        ->description('Pilih pasien terdaftar atau daftarkan pasien baru')
-                        ->icon('heroicon-m-user')
-                        ->schema([
-                            Select::make('pasien_id')
-                                ->label('Pasien Terdaftar')
-                                ->relationship('pasien', 'nama')
-                                ->searchable(['nama', 'no_ktp', 'no_paspor'])
-                                ->getOptionLabelFromRecordUsing(fn (\App\Models\Pasien $record): string => "{$record->nama} (NIK: " . ($record->no_ktp ?? '-') . ' | Paspor: ' . ($record->no_paspor ?? '-') . ')')
-                                ->preload()
-                                ->required()
-                                ->createOptionForm([
-                                    TextInput::make('nama')
-                                        ->label('Nama Lengkap')
-                                        ->required()
-                                        ->maxLength(255),
-                                    Select::make('jenis_kelamin')
-                                        ->label('Jenis Kelamin')
-                                        ->options([
-                                            'Laki-laki' => 'Laki-laki',
-                                            'Perempuan' => 'Perempuan',
-                                        ])
-                                        ->required()
-                                        ->native(false),
-                                    DatePicker::make('tanggal_lahir')
-                                        ->label('Tanggal Lahir')
-                                        ->maxDate(now())
-                                        ->native(false),
-                                    TextInput::make('no_ktp')
-                                        ->label('Nomor KTP / NIK')
-                                        ->length(16)
-                                        ->regex('/^[0-9]{16}$/')
-                                        ->validationMessages([
-                                            'regex' => 'Nomor KTP / NIK wajib terdiri dari tepat 16 digit angka.',
-                                        ])
-                                        ->unique(\App\Models\Pasien::class, 'no_ktp')
-                                        ->helperText('Wajib tepat 16 digit angka sesuai KTP/e-KTP.'),
-                                    TextInput::make('no_paspor')
-                                        ->label('Nomor Paspor')
-                                        ->maxLength(30)
-                                        ->unique(\App\Models\Pasien::class, 'no_paspor'),
-                                ])
-                                ->createOptionModalHeading('Daftarkan Pasien Baru')
-                                ->helperText('Cari pasien berdasarkan Nama, NIK, atau Nomor Paspor. Jika belum ada, klik tanda "+" untuk input baru.')
-                                ->native(false),
-                        ]),
+                Grid::make(['default' => 1, 'lg' => 3])
+                    ->schema([
+                        // Kolom Kiri (2 Kolom): Section 1 (Data MCU) & Section 2 (Lampiran)
+                        Grid::make(1)
+                            ->columnSpan(['default' => 1, 'lg' => 2])
+                            ->schema([
+                                Section::make('1. Data Sertifikat MCU')
+                                    ->description('Isi data pasien dan hasil pemeriksaan MCU secara lengkap.')
+                                    ->icon('heroicon-o-document-text')
+                                    ->collapsible()
+                                    ->schema([
+                                        Grid::make(2)->schema([
+                                            TextInput::make('nama_pasien')
+                                                ->label('Nama Lengkap (Name)')
+                                                ->required()
+                                                ->maxLength(255)
+                                                ->placeholder('Contoh: AZIZ')
+                                                ->live(debounce: 500),
 
-                    Wizard\Step::make('Pemeriksaan Klinis')
-                        ->description('Nomor sertifikat, tanggal berlaku, dan kelayakan kerja')
-                        ->icon('heroicon-m-clipboard-document-check')
-                        ->schema([
-                            Grid::make(2)->schema([
-                                TextInput::make('nomor_mcu')
-                                    ->label('Nomor Sertifikat MCU')
-                                    ->required()
-                                    ->maxLength(100)
-                                    ->default(fn () => app(\App\Actions\Mcu\GenerateNomorMcuAction::class)->generatePreview())
-                                    ->helperText('Nomor MCU resmi diterbitkan berurutan secara transaksional.')
-                                    ->readOnly(),
+                                            Select::make('jenis_kelamin')
+                                                ->label('Jenis Kelamin (Gender)')
+                                                ->options([
+                                                    'Laki-laki' => 'Laki-laki (Male)',
+                                                    'Perempuan' => 'Perempuan (Female)',
+                                                ])
+                                                ->required()
+                                                ->native(false),
+                                        ]),
 
-                                TextInput::make('nama_perusahaan')
-                                    ->label('Perusahaan / Instansi Pemohon')
-                                    ->placeholder('PT Pelayaran / Perusahaan Pemohon')
-                                    ->maxLength(255),
+                                        Grid::make(2)->schema([
+                                            DatePicker::make('tanggal_lahir')
+                                                ->label('Tanggal Lahir (Date of Birth)')
+                                                ->required()
+                                                ->maxDate(now())
+                                                ->native(false),
+
+                                            TextInput::make('no_ktp')
+                                                ->label('KTP (ID Number)')
+                                                ->required()
+                                                ->length(16)
+                                                ->regex('/^[0-9]{16}$/')
+                                                ->validationMessages([
+                                                    'regex' => 'Nomor KTP wajib tepat 16 digit angka.',
+                                                ])
+                                                ->placeholder('16 Digit NIK')
+                                                ->helperText('Jika NIK sudah ada, data pasien otomatis diperbarui.'),
+                                        ]),
+
+                                        Grid::make(2)->schema([
+                                            TextInput::make('no_paspor')
+                                                ->label('Paspor (Passport) - Opsional')
+                                                ->maxLength(30)
+                                                ->placeholder('Nomor Paspor Aktif'),
+
+                                            TextInput::make('nama_perusahaan')
+                                                ->label('Perusahaan (Company)')
+                                                ->required()
+                                                ->maxLength(255)
+                                                ->placeholder('PT / Perusahaan Pemohon'),
+                                        ]),
+
+                                        Grid::make(2)->schema([
+                                            DatePicker::make('tanggal_periksa')
+                                                ->label('Tanggal MCU (Date of Checkup)')
+                                                ->required()
+                                                ->default(now()->toDateString())
+                                                ->native(false),
+
+                                            DatePicker::make('berlaku_sampai')
+                                                ->label('Berlaku Sampai (Valid Until)')
+                                                ->required()
+                                                ->default(now()->addYears(2)->toDateString())
+                                                ->native(false),
+                                        ]),
+
+                                        ToggleButtons::make('status_kelayakan')
+                                            ->label('Status Kelayakan (Fitness Status)')
+                                            ->options([
+                                                'FIT' => 'FIT (LAYAK KERJA)',
+                                                'UNFIT' => 'UNFIT (TIDAK LAYAK KERJA)',
+                                            ])
+                                            ->colors([
+                                                'FIT' => 'success',
+                                                'UNFIT' => 'danger',
+                                            ])
+                                            ->icons([
+                                                'FIT' => 'heroicon-m-check-badge',
+                                                'UNFIT' => 'heroicon-m-x-circle',
+                                            ])
+                                            ->inline()
+                                            ->required()
+                                            ->live(),
+
+                                        Grid::make(3)->schema([
+                                            TextInput::make('wilayah_operasi')
+                                                ->label('Wilayah Operasi')
+                                                ->placeholder('Near Coastal / Ocean Going')
+                                                ->maxLength(100),
+
+                                            TextInput::make('departemen')
+                                                ->label('Departemen / Bagian')
+                                                ->placeholder('Deck / Engine / Catering')
+                                                ->maxLength(100),
+
+                                            TextInput::make('jenis_kapal')
+                                                ->label('Jenis Kapal')
+                                                ->placeholder('Bulk Carrier / Oil Tanker')
+                                                ->maxLength(100),
+                                        ]),
+
+                                        TextInput::make('catatan')
+                                            ->label('Catatan Dokter / Klinis')
+                                            ->placeholder('Contoh: Memerlukan kacamata koreksi saat dinas')
+                                            ->maxLength(500),
+                                    ]),
+
+                                Section::make('2. Lampiran File (Opsional)')
+                                    ->description('Unggah hasil cetak PDF atau foto dokumen (JPG/PNG). Berkas akan ditumpuk di bawah sertifikat cover.')
+                                    ->icon('heroicon-o-paper-clip')
+                                    ->collapsible()
+                                    ->schema([
+                                        FileUpload::make('lampiran_file')
+                                            ->label('Unggah Berkas PDF / Foto Hasil Cetak (JPG/PNG)')
+                                            ->disk('local')
+                                            ->directory('lampiran-mcu')
+                                            ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
+                                            ->maxSize(20480)
+                                            ->helperText('Format PDF, JPG, atau PNG (Maks. 20MB). Berkas akan dirender tepat di bawah lembar cover sertifikat MCU.'),
+                                    ]),
                             ]),
 
-                            Grid::make(2)->schema([
-                                DatePicker::make('tanggal_periksa')
-                                    ->label('Tanggal Pemeriksaan')
-                                    ->required()
-                                    ->default(now()->toDateString())
-                                    ->native(false),
-
-                                DatePicker::make('berlaku_sampai')
-                                    ->label('Masa Berlaku Sampai')
-                                    ->required()
-                                    ->default(now()->addYears(2)->toDateString())
-                                    ->native(false),
+                        // Kolom Kanan (1 Kolom): Section 3 (Pratinjau Langsung & QR Code)
+                        Grid::make(1)
+                            ->columnSpan(['default' => 1, 'lg' => 1])
+                            ->schema([
+                                Section::make('3. Pratinjau Langsung')
+                                    ->description('QR Code real-time yang dapat discan saat sertifikat diterbitkan.')
+                                    ->icon('heroicon-o-qr-code')
+                                    ->schema([
+                                        \Filament\Forms\Components\View::make('filament.components.mcu-live-preview'),
+                                    ]),
                             ]),
-
-                            Grid::make(3)->schema([
-                                TextInput::make('wilayah_operasi')
-                                    ->label('Wilayah Operasi')
-                                    ->placeholder('Near Coastal / Ocean Going')
-                                    ->maxLength(100),
-
-                                TextInput::make('departemen')
-                                    ->label('Departemen / Bagian')
-                                    ->placeholder('Deck / Engine / Catering')
-                                    ->maxLength(100),
-
-                                TextInput::make('jenis_kapal')
-                                    ->label('Jenis Kapal')
-                                    ->placeholder('Bulk Carrier / Oil Tanker')
-                                    ->maxLength(100),
-                            ]),
-
-                            ToggleButtons::make('status_kelayakan')
-                                ->label('Status Kelayakan Medis (Medical Fitness)')
-                                ->options([
-                                    'FIT' => 'LAYAK KERJA (FIT FOR SEA DUTY)',
-                                    'UNFIT' => 'TIDAK LAYAK KERJA (UNFIT)',
-                                ])
-                                ->colors([
-                                    'FIT' => 'success',
-                                    'UNFIT' => 'danger',
-                                ])
-                                ->icons([
-                                    'FIT' => 'heroicon-m-check-badge',
-                                    'UNFIT' => 'heroicon-m-x-circle',
-                                ])
-                                ->inline()
-                                ->required(),
-
-                            TextInput::make('catatan')
-                                ->label('Catatan Dokter / Keterangan Klinis')
-                                ->placeholder('Contoh: Memerlukan kacamata koreksi saat bertugas')
-                                ->maxLength(500),
-                        ]),
-
-                    Wizard\Step::make('Lampiran Berkas Medis')
-                        ->description('Unggah hasil laboratorium atau berkas penunjang ke Private Storage')
-                        ->icon('heroicon-m-paper-clip')
-                        ->schema([
-                            Repeater::make('lampiranMcu')
-                                ->relationship('lampiranMcu')
-                                ->label('Dokumen & Berkas Penunjang')
-                                ->schema([
-                                    FileUpload::make('path_berkas')
-                                        ->label('Berkas Medis (PDF, JPG, PNG)')
-                                        ->disk('local')
-                                        ->directory('lampiran-mcu')
-                                        ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
-                                        ->maxSize(10240)
-                                        ->required(),
-
-                                    Select::make('jenis_lampiran')
-                                        ->label('Kategori Lampiran')
-                                        ->options([
-                                            'sertifikat' => 'Sertifikat Kelayakan Resmi',
-                                            'laporan_medis' => 'Hasil Laboratorium & Diagnostik',
-                                            'berkas_tambahan' => 'Rontgen / EKG / Lainnya',
-                                        ])
-                                        ->default('sertifikat')
-                                        ->required()
-                                        ->native(false),
-                                ])
-                                ->columns(2)
-                                ->defaultItems(0)
-                                ->addActionLabel('Tambah Lampiran Berkas')
-                                ->helperText('Berkas disimpan secara privat di disk terisolasi (tidak dapat diakses publik tanpa verifikasi sah).'),
-                        ]),
-
-                    Wizard\Step::make('Konfirmasi & Publikasi')
-                        ->description('Verifikasi akhir sebelum penerbitan sertifikat QR resmi')
-                        ->icon('heroicon-m-shield-check')
-                        ->schema([
-                            Placeholder::make('ringkasan_konfirmasi')
-                                ->label('Ketentuan Penerbitan Dokumen')
-                                ->content('Pastikan seluruh data identitas pasien dan hasil kelayakan klinis telah diperiksa dengan seksama. Setelah menekan tombol Simpan / Buat, sertifikat MCU akan diterbitkan dengan token verifikasi kriptografis unik dan dicatat dalam Log Audit.'),
-                        ]),
-                ])->columnSpanFull(),
+                    ]),
             ]);
     }
 
