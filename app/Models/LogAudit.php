@@ -15,6 +15,20 @@ class LogAudit extends Model
     use HasFactory;
 
     /**
+     * Perlindungan integritas: Log audit bersifat append-only dan tidak dapat diubah atau dihapus.
+     */
+    protected static function booted(): void
+    {
+        static::updating(function (): bool {
+            throw new \RuntimeException('Log audit bersifat append-only dan tidak dapat diubah.');
+        });
+
+        static::deleting(function (): bool {
+            throw new \RuntimeException('Log audit bersifat append-only dan tidak dapat dihapus.');
+        });
+    }
+
+    /**
      * Nama tabel database terkait.
      */
     protected $table = 'log_audit';

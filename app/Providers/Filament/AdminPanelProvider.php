@@ -39,6 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.75rem')
             ->favicon(asset('favicon.ico'))
             ->passwordReset()
+            ->emailVerification()
             ->profile()
             ->colors([
                 'primary' => Color::hex('#C52242'),
@@ -69,6 +70,7 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                \App\Http\Middleware\PreventSensitiveCaching::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

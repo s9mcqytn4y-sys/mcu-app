@@ -7,12 +7,13 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -29,6 +30,8 @@ class User extends Authenticatable implements FilamentUser
         'password',
         'peran',
         'aktif',
+        'token_undangan',
+        'undangan_dikirim_pada',
         'waktu_login_terakhir',
         'ip_login_terakhir',
     ];
@@ -41,6 +44,7 @@ class User extends Authenticatable implements FilamentUser
     protected $hidden = [
         'password',
         'remember_token',
+        'token_undangan',
     ];
 
     /**
@@ -52,10 +56,43 @@ class User extends Authenticatable implements FilamentUser
     {
         return [
             'email_verified_at' => 'datetime',
+            'undangan_dikirim_pada' => 'datetime',
             'waktu_login_terakhir' => 'datetime',
             'password' => 'hashed',
             'aktif' => 'boolean',
         ];
+    }
+
+    /**
+     * Booted model hooks untuk mencatat perubahan wewenang dan status aktif ke log audit.
+     */
+    protected static function booted(): void
+    {
+        static::updated(function (User $user): void {
+            $perubahan = [];
+            if ($user->wasChanged('peran')) {
+                $perubahan['peran'] = [
+                    'dari' => $user->getOriginal('peran'),
+                    'menjadi' => $user->peran,
+                ];
+            }
+            if ($user->wasChanged('aktif')) {
+                $perubahan['aktif'] = [
+                    'dari' => (bool) $user->getOriginal('aktif'),
+                    'menjadi' => (bool) $user->aktif,
+                ];
+            }
+            if (!empty($perubahan)) {
+                LogAudit::catat(
+                    tindakan: 'MODIFIKASI_AKSES_PENGGUNA',
+                    model: $user,
+                    rincian: [
+                        'username' => $user->username,
+                        'perubahan' => $perubahan,
+                    ]
+                );
+            }
+        });
     }
 
     /**

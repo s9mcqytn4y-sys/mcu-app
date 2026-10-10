@@ -4,8 +4,8 @@
         <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                    <div class="inline-flex items-center gap-2 rounded-md bg-teal-50 px-2.5 py-1 text-xs font-semibold text-teal-800 dark:bg-teal-950/60 dark:text-teal-300">
-                        <span class="inline-block size-2 rounded-full bg-teal-500"></span>
+                    <div class="inline-flex items-center gap-2 rounded-md bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                        <span class="inline-block size-2 rounded-full bg-rose-600"></span>
                         Ringkasan Pemeriksaan
                     </div>
                     <h2 class="mt-2 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
@@ -18,7 +18,7 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <a
                         href="{{ $this->getUrlPemeriksaanBaru() }}"
-                        class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-teal-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-teal-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-700 dark:bg-teal-600 dark:hover:bg-teal-500"
+                        class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#C52242] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a61c36] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C52242]"
                     >
                         <x-heroicon-m-plus-circle class="size-5" />
                         Pemeriksaan Baru
@@ -47,7 +47,7 @@
             <div class="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pemeriksaan Hari Ini</span>
-                    <span class="rounded-full bg-teal-50 p-2 text-teal-700 transition-colors group-hover:bg-teal-100 dark:bg-teal-950/60 dark:text-teal-300 dark:group-hover:bg-teal-900/60">
+                    <span class="rounded-full bg-rose-50 p-2 text-rose-700 transition-colors group-hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:group-hover:bg-rose-900/60">
                         <x-heroicon-o-calendar-days class="size-5" />
                     </span>
                 </div>
@@ -114,8 +114,8 @@
                     <div class="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                         {{ number_format($totalMcu) }}
                     </div>
-                    <div class="mt-1 flex items-center gap-1 text-xs font-medium text-teal-700 dark:text-teal-400">
-                        <span class="inline-block size-1.5 rounded-full bg-teal-500"></span>
+                    <div class="mt-1 flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                        <span class="inline-block size-1.5 rounded-full bg-emerald-500"></span>
                         Arsip tersimpan dengan audit log
                     </div>
                 </div>
@@ -135,7 +135,7 @@
                 </div>
                 <a
                     href="{{ $this->getUrlDaftarPemeriksaan() }}"
-                    class="text-xs font-semibold text-teal-700 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-300"
+                    class="text-xs font-semibold text-[#C52242] hover:text-[#a61c36]"
                 >
                     Lihat Semua Arsip &rarr;
                 </a>
@@ -157,7 +157,7 @@
                     <div class="mt-4">
                         <a
                             href="{{ $this->getUrlPemeriksaanBaru() }}"
-                            class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-teal-700 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500"
+                            class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C52242] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#a61c36]"
                         >
                             <x-heroicon-m-plus class="size-4" />
                             Tambah Pemeriksaan Sekarang

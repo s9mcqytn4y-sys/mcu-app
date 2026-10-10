@@ -87,12 +87,13 @@ class UserResource extends Resource
 
                         TextInput::make('password')
                             ->label('Kata Sandi')
-                            ->placeholder(fn (string $operation): string => $operation === 'create' ? 'Masukkan kata sandi baru (min. 8 karakter)' : 'Kosongkan jika tidak ingin mengubah kata sandi')
+                            ->placeholder(fn (string $operation): string => $operation === 'create' ? 'Kosongkan untuk mengirim surel undangan aktivasi' : 'Kosongkan jika tidak ingin mengubah kata sandi')
+                            ->helperText(fn (string $operation): string => $operation === 'create' ? 'Jika dikosongkan, tautan aktivasi & setel kata sandi akan otomatis dikirimkan ke email pengguna.' : 'Biarkan kosong kecuali ingin mereset kata sandi.')
                             ->password()
                             ->revealable()
                             ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? Hash::make($state) : null)
                             ->dehydrated(fn (?string $state): bool => filled($state))
-                            ->required(fn (string $operation): bool => $operation === 'create')
+                            ->required(false)
                             ->autocomplete('new-password')
                             ->maxLength(255)
                             ->extraInputAttributes(['class' => 'min-h-[44px]']),
@@ -135,6 +136,15 @@ class UserResource extends Resource
                     })
                     ->formatStateUsing(fn (string $state): string => ucfirst($state)),
 
+                TextColumn::make('status_verifikasi')
+                    ->label('Verifikasi Surel')
+                    ->badge()
+                    ->state(fn (User $record): string => $record->hasVerifiedEmail() ? 'Terverifikasi' : 'Menunggu Aktivasi')
+                    ->color(fn (string $state): string => match ($state) {
+                        'Terverifikasi' => 'success',
+                        default => 'warning',
+                    }),
+
                 IconColumn::make('aktif')
                     ->label('Aktif')
                     ->boolean(),
@@ -153,6 +163,29 @@ class UserResource extends Resource
                     ]),
             ])
             ->actions([
+                \Filament\Tables\Actions\Action::make('kirim_undangan')
+                    ->label('Kirim Undangan')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('warning')
+                    ->visible(fn (User $record): bool => ! $record->hasVerifiedEmail())
+                    ->requiresConfirmation()
+                    ->modalHeading('Kirim Ulang Undangan Aktivasi')
+                    ->modalDescription('Tautan aktivasi akun dan penyetelan kata sandi baru akan dikirimkan ke alamat email pengguna.')
+                    ->modalSubmitActionLabel('Kirim Surel Undangan')
+                    ->action(function (User $record): void {
+                        $token = \Illuminate\Support\Facades\Password::broker()->createToken($record);
+                        $record->forceFill([
+                            'token_undangan' => \Illuminate\Support\Str::random(60),
+                            'undangan_dikirim_pada' => now(),
+                        ])->saveQuietly();
+
+                        $record->notify(new \App\Notifications\UndanganPenggunaNotification($token));
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Undangan aktivasi berhasil dikirim ke ' . $record->email)
+                            ->success()
+                            ->send();
+                    }),
                 EditAction::make()
                     ->label('Ubah Data'),
                 DeleteAction::make()

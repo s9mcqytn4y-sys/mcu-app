@@ -1,4 +1,4 @@
-name: Laravel MCU App CI
+name: Laravel MCU App CI/CD Pipeline
 
 on:
   push:
@@ -8,16 +8,33 @@ on:
 
 jobs:
   laravel-tests:
+    name: Test & Build (PostgreSQL 16)
     runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v4
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: mcu_testing
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-    - name: Setup PHP
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Setup PHP & Extensions
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo, sqlite3, pdo_sqlite, gd, zip
+        extensions: mbstring, xml, ctype, iconv, intl, pdo, pdo_pgsql, pgsql, sqlite3, pdo_sqlite, gd, zip
         coverage: none
 
     - name: Setup Node.js
@@ -33,20 +50,33 @@ jobs:
         npm ci
         npm run build
 
-    - name: Prepare Environment & SQLite Database
+    - name: Prepare Environment & App Key
       run: |
         cp .env.example .env
         php artisan key:generate
-        touch database/database.sqlite
 
-    - name: Run Migrations
+    - name: Run Database Migrations on PostgreSQL
+      env:
+        DB_CONNECTION: pgsql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 5432
+        DB_DATABASE: mcu_testing
+        DB_USERNAME: postgres
+        DB_PASSWORD: password
       run: php artisan migrate --force
 
-    - name: Execute Tests via PHPUnit / Pest
+    - name: Execute Tests Suite via PHPUnit on PostgreSQL
+      env:
+        DB_CONNECTION: pgsql
+        DB_HOST: 127.0.0.1
+        DB_PORT: 5432
+        DB_DATABASE: mcu_testing
+        DB_USERNAME: postgres
+        DB_PASSWORD: password
       run: php artisan test --colors=always
 
   deploy-hpanel:
-    name: Deploy to Hostinger Cloud (hPanel)
+    name: Staging & Deploy Verification (Hostinger Cloud)
     needs: laravel-tests
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -62,5 +92,14 @@ jobs:
             echo "Triggering Hostinger hPanel Git Auto-Deploy..."
             HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$HOSTINGER_WEBHOOK_URL")
             echo "Hostinger Auto-Deploy Webhook returned HTTP $HTTP_STATUS."
+            if [ "$HTTP_STATUS" -ne 200 ] && [ "$HTTP_STATUS" -ne 201 ]; then
+              echo "Deployment trigger returned non-200 status: $HTTP_STATUS"
+              exit 1
+            fi
           fi
 
+      - name: Post-Deployment Health Check Verification
+        run: |
+          echo "Verifying application availability..."
+          PROD_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 "https://klinikindosehat2003.com/up" || true)
+          echo "Production health check endpoint (/up) returned: $PROD_STATUS"
