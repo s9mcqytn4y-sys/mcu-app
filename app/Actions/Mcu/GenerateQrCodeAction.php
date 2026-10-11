@@ -41,6 +41,20 @@ final class GenerateQrCodeAction
             ->getString();
     }
 
+    public function generatePngDataUri(string $url, int $size = 512): string
+    {
+        return Builder::create()
+            ->writer(new PngWriter())
+            ->data($url)
+            ->encoding(new Encoding('UTF-8'))
+            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
+            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
+            ->size($size)
+            ->margin(16)
+            ->build()
+            ->getDataUri();
+    }
+
     public function generatePngString(string $url, int $size = 1024): string
     {
         return Builder::create()

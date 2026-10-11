@@ -39,6 +39,7 @@ class AdminPanelProvider extends PanelProvider
             ->darkModeBrandLogo(asset('images/logo/logo-indosehat-horizontal.png'))
             ->brandLogoHeight('2.75rem')
             ->favicon(asset('favicon.ico'))
+            ->viteTheme('resources/css/app.css')
             ->passwordReset()
             ->emailVerification()
             ->profile()
