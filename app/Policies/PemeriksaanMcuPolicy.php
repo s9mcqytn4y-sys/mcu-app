@@ -35,8 +35,8 @@ class PemeriksaanMcuPolicy
 
     /**
      * Menentukan apakah pengguna dapat memperbarui pemeriksaan MCU.
-     * Staf operasional dilarang mengedit jika sertifikat sudah terbit (FIT, UNFIT, DICABUT).
-     * Administrator dapat melakukan pembaruan/revisi.
+     * Dibatasi ketat hanya untuk Administrator aktif demi integritas sertifikat medis.
+     * Staf operasional bersifat read-only untuk seluruh rekam pemeriksaan MCU.
      */
     public function update(User $user, PemeriksaanMcu $mcu): bool
     {
@@ -48,8 +48,7 @@ class PemeriksaanMcuPolicy
             return true;
         }
 
-        // Staf hanya boleh mengubah pemeriksaan yang masih berstatus DRAF
-        return strtoupper((string) $mcu->status_kelayakan) === 'DRAF';
+        return $user->apakahStaf() && $mcu->status_kelayakan === 'DRAF';
     }
 
     /**

@@ -253,16 +253,17 @@
                                                 >
                                                     QR
                                                 </x-filament::button>
+                                            @if (auth()->user()?->apakahAdministrator())
+                                                <x-filament::button
+                                                    tag="a"
+                                                    href="{{ \App\Filament\Resources\PemeriksaanMcuResource::getUrl('edit', ['record' => $mcu->id]) }}"
+                                                    icon="heroicon-m-pencil-square"
+                                                    color="gray"
+                                                    size="xs"
+                                                >
+                                                    Edit
+                                                </x-filament::button>
                                             @endif
-                                            <x-filament::button
-                                                tag="a"
-                                                href="{{ \App\Filament\Resources\PemeriksaanMcuResource::getUrl('edit', ['record' => $mcu->id]) }}"
-                                                icon="heroicon-m-pencil-square"
-                                                color="gray"
-                                                size="xs"
-                                            >
-                                                Edit
-                                            </x-filament::button>
                                         </div>
                                     </td>
                                 </tr>

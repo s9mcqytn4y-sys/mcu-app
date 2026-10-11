@@ -30,7 +30,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <!-- Medical Cross Icon -->
-                <svg class="w-8 h-8 text-sky-400" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg class="w-8 h-8 text-sky-400" width="32" height="32" style="width: 32px; height: 32px; max-width: 32px; color: #38bdf8;" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M19 10.5h-5.5V5a1.5 1.5 0 0 0-3 0v5.5H5a1.5 1.5 0 0 0 0 3h5.5V19a1.5 1.5 0 0 0 3 0v-5.5H19a1.5 1.5 0 0 0 0-3z"/>
                 </svg>
                 <span class="font-bold text-xl text-white tracking-tight">Klinik Indosehat <span class="text-sky-400">2003</span></span>

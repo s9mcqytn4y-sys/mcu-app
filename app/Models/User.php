@@ -113,6 +113,11 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         });
 
         static::deleted(function (User $user): void {
+            // Bersihkan token reset password atau aktivasi yatim piatu di database
+            \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+                ->where('email', $user->email)
+                ->delete();
+
             LogAudit::catat(
                 tindakan: 'hapus_pengguna',
                 model: $user,

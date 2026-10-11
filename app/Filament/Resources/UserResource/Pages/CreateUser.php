@@ -34,6 +34,10 @@ class CreateUser extends CreateRecord
 
         if (! empty($record->token_undangan)) {
             try {
+                \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+                    ->where('email', $record->email)
+                    ->delete();
+
                 $token = Password::broker()->createToken($record);
                 $record->notify(new UndanganPenggunaNotification($token));
             } catch (\Throwable $e) {

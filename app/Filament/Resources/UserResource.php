@@ -196,6 +196,10 @@ class UserResource extends Resource
                     )
                     ->action(function (User $record, \Filament\Tables\Actions\Action $action): void {
                         try {
+                            \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+                                ->where('email', $record->email)
+                                ->delete();
+
                             $token = \Illuminate\Support\Facades\Password::broker()->createToken($record);
                             $record->forceFill([
                                 'token_undangan' => \Illuminate\Support\Str::random(60),

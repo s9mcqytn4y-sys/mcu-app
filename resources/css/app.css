@@ -78,10 +78,20 @@ input:-webkit-autofill:active {
     border-bottom: 1px solid rgba(30, 41, 59, 0.7);
 }
 
-/* Accessible focus ring for keyboard navigation */
-:focus-visible {
+/* Accessible focus ring for keyboard navigation on non-form elements */
+:focus-visible:not(input, select, textarea, .fi-input, .fi-input-wrp, .fi-input-wrp *) {
     outline: 2px solid var(--color-brand-primary);
     outline-offset: 2px;
+}
+
+/* Eliminate double outline collision with Filament form input components */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+.fi-input:focus-visible,
+.fi-input-wrp:focus-within,
+.fi-input-wrp :focus-visible {
+    outline: none !important;
 }
 
 /* Respect user accessibility motion preference */
