@@ -39,6 +39,8 @@ class PasienResource extends Resource
                     ->schema([
                         TextInput::make('nama')
                             ->label('Nama Lengkap')
+                            ->autofocus()
+                            ->autocomplete('off')
                             ->required()
                             ->maxLength(255),
 

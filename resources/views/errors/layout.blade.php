@@ -54,7 +54,7 @@
             </div>
 
             <div class="pt-6">
-                <a href="/" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all shadow-md hover:shadow-lg">
+                <a href="/" class="inline-flex items-center justify-center min-h-11 px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
                     Kembali ke Beranda
                 </a>
             </div>

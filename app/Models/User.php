@@ -19,11 +19,20 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     use HasFactory, Notifiable;
 
     /**
+     * Dapatkan nama kolom route key untuk pengikatan rute model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
+    /**
      * Atribut yang dapat diisi secara massal.
      *
      * @var list<string>
      */
     protected $fillable = [
+        'uuid',
         'name',
         'username',
         'email',
@@ -64,10 +73,18 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     }
 
     /**
-     * Booted model hooks untuk mencatat perubahan pengguna ke log audit.
+     * Booted model hooks untuk mencatat perubahan pengguna ke log audit dan mengisi UUID.
      */
     protected static function booted(): void
     {
+        parent::booted();
+
+        static::creating(function (User $user): void {
+            if (empty($user->uuid)) {
+                $user->uuid = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+
         static::created(function (User $user): void {
             LogAudit::catat(
                 tindakan: 'buat_pengguna',

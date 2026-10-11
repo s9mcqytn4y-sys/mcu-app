@@ -18,6 +18,14 @@ class Pasien extends Model
      */
     protected static function booted(): void
     {
+        parent::booted();
+
+        static::creating(function (Pasien $pasien): void {
+            if (empty($pasien->uuid)) {
+                $pasien->uuid = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+
         static::created(function (Pasien $pasien): void {
             LogAudit::catat(
                 tindakan: 'buat_pasien',
@@ -77,12 +85,21 @@ class Pasien extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'uuid',
         'nama',
         'jenis_kelamin',
         'tanggal_lahir',
         'no_ktp',
         'no_paspor',
     ];
+
+    /**
+     * Dapatkan nama kolom route key untuk pengikatan rute model.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
 
     /**
      * Tipe data casts untuk atribut.

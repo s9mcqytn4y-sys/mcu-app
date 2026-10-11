@@ -7,6 +7,7 @@ Route::get('/', fn () => redirect('/admin'));
 
 Route::middleware(\App\Http\Middleware\PreventSensitiveCaching::class)->group(function () {
     Route::get('/v/{uuid}', [McuViewerController::class, 'show'])->name('mcu.verify');
+    Route::get('/v/{uuid}/pdf', [McuViewerController::class, 'unduhPdf'])->name('mcu.pdf.download');
     Route::get('/v/{uuid}/file/{index}/view', [McuViewerController::class, 'viewFile'])->name('mcu.file.view');
     Route::get('/v/{uuid}/file/{index}/download', [McuViewerController::class, 'downloadFile'])->name('mcu.file.download');
 });

@@ -133,4 +133,41 @@ class McuViewerController extends Controller
             'X-Content-Type-Options' => 'nosniff',
         ]);
     }
+
+    /**
+     * Mengunduh sertifikat resmi hasil pemeriksaan MCU dalam format PDF.
+     * Dapat diakses dan diunduh publik melalui token verifikasi yang valid (status != DRAF).
+     */
+    public function unduhPdf(string $uuid): Response
+    {
+        $pemeriksaan = PemeriksaanMcu::with(['pasien', 'lampiranMcu'])
+            ->where('token_verifikasi', $uuid)
+            ->first();
+
+        if (! $pemeriksaan || $pemeriksaan->status_kelayakan === 'DRAF') {
+            abort(404, 'Dokumen MCU tidak ditemukan atau belum diterbitkan.');
+        }
+
+        // Rekam audit log unduh PDF
+        LogAudit::rekam(
+            tindakan: 'UNDUH_PDF_HASIL_MCU',
+            tipeModel: PemeriksaanMcu::class,
+            idModel: $pemeriksaan->id,
+            rincian: [
+                'nomor_mcu' => $pemeriksaan->nomor_mcu,
+                'nama_pasien' => $pemeriksaan->pasien?->nama,
+            ]
+        );
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('mcu.pdf', [
+            'pemeriksaan' => $pemeriksaan,
+        ])->setPaper('a4', 'portrait');
+
+        $safeName = \Illuminate\Support\Str::slug($pemeriksaan->pasien?->nama ?? 'pasien');
+        $safeNumber = str_replace(['/', '\\'], '-', $pemeriksaan->nomor_mcu);
+        $filename = sprintf('MCU-%s-%s.pdf', $safeNumber, $safeName);
+
+        return $pdf->download($filename);
+    }
 }
+

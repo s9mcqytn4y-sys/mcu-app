@@ -120,6 +120,38 @@ input:-webkit-autofill:active {
     .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav-groups {
         margin-inline: 0 !important;
     }
+
+    .fi-sidebar:not(.fi-sidebar-open) .fi-version-badge-brand {
+        display: none !important;
+    }
+
+    .fi-sidebar:not(.fi-sidebar-open) .fi-version-badge-container {
+        justify-content: center !important;
+        padding-inline: 0.25rem !important;
+    }
+}
+
+/* Fix Profile Drawer / User Menu Dropdown Clipping (Poin 1) */
+.fi-topbar {
+    overflow: visible !important;
+}
+
+.fi-topbar-item,
+.fi-user-menu {
+    position: relative;
+    z-index: 40;
+}
+
+.fi-dropdown-panel {
+    z-index: 60 !important;
+    margin-top: 0.5rem !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25), 0 8px 10px -6px rgba(0, 0, 0, 0.2) !important;
+}
+
+.fi-dropdown-list-item {
+    min-height: 2.75rem; /* 44x44px touch target WCAG 2.2 AA */
+    display: flex;
+    align-items: center;
 }
 
 

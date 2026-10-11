@@ -51,6 +51,13 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
     
+    <!-- PWA & Mobile Web Standards (2026) -->
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <meta name="theme-color" content="#0284c7">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Indosehat MCU">
+
     <!-- Tipografi Modern -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -232,6 +239,40 @@
             font-size: 1.05rem;
             color: var(--color-text-main);
             margin-top: 4px;
+        }
+
+        /* Tombol Unduh Sertifikat PDF Resmi */
+        .btn-download-certificate {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 10px 24px;
+            background-color: var(--color-primary);
+            color: #ffffff !important;
+            font-size: 0.925rem;
+            font-weight: 600;
+            text-decoration: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(21, 128, 61, 0.25);
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+        }
+
+        .btn-download-certificate:hover {
+            background-color: #166534;
+            box-shadow: 0 4px 12px rgba(21, 128, 61, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .btn-download-certificate:active {
+            transform: translateY(0);
+        }
+
+        .btn-download-certificate:focus-visible {
+            outline: 2px solid #166534;
+            outline-offset: 3px;
         }
 
         /* Stacked Attachment Section (Section 2 Stack) */
@@ -476,6 +517,21 @@
                     {{ $pemeriksaan->berlaku_sampai ? $pemeriksaan->berlaku_sampai->format('F d, Y') : '-' }}
                 </time>
             </aside>
+
+            <!-- Tombol Unduh Sertifikat PDF Resmi untuk Public User -->
+            <div style="margin-top: 1.5rem; display: flex; justify-content: center; width: 100%;">
+                <a href="{{ route('mcu.pdf.download', ['uuid' => $pemeriksaan->token_verifikasi]) }}" 
+                   class="btn-download-certificate" 
+                   id="btn-download-mcu-pdf"
+                   aria-label="Unduh Dokumen Sertifikat Resmi Medical Check-Up dalam format PDF">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    <span>Unduh Sertifikat PDF Resmi</span>
+                </a>
+            </div>
         </article>
 
         <!-- Section 2: Lampiran File (Dibatasi Akses Petugas Terautentikasi / UU PDP) -->
@@ -549,6 +605,14 @@
         <p>Dokumen ini diterbitkan secara sah dan dilindungi hak cipta &copy; {{ date('Y') }}.</p>
     </footer>
 </main>
+
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+    }
+</script>
 
 </body>
 </html>

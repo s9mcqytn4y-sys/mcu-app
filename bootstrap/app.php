@@ -18,4 +18,25 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $exception, Request $request) {
+            \App\Models\LogAudit::rekam(
+                tindakan: 'sesi_kadaluarsa',
+                rincian: [
+                    'url' => $request->fullUrl(),
+                    'pesan' => 'Sesi pengguna telah kadaluarsa atau token CSRF tidak valid.',
+                ],
+                alamatIp: $request->ip(),
+            );
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Sesi Anda telah berakhir. Silakan muat ulang halaman atau login kembali.',
+                ], 419);
+            }
+
+            return response()->view('errors.419', [
+                'exception' => $exception,
+            ], 419);
+        });
     })->create();

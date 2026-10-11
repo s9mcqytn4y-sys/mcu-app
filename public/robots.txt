@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Allow: /
+Allow: /v/
+Disallow: /admin/
+Disallow: /livewire/
+Disallow: /filament/
+
+Sitemap: https://mcu.indosehat2003.com/sitemap.xml

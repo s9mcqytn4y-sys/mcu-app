@@ -212,6 +212,7 @@ class LogAuditResource extends Resource
                     ->formatStateUsing(fn (?string $state): string => class_basename((string) $state)),
             ])
             ->defaultSort('created_at', 'desc')
+            ->poll('15s')
             ->filters([
                 SelectFilter::make('tindakan')
                     ->label('Filter Tindakan')
