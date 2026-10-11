@@ -176,7 +176,76 @@ class UserResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Kirim Ulang Undangan Aktivasi')
                     ->modalDescription('Tautan aktivasi akun dan penyetelan kata sandi baru akan dikirimkan ke alamat email pengguna.')
-                    ->modalSubmitActionLabel('Kirim Surel Undangan')
+                    ->modalSubmitAction(fn (\Filament\Actions\StaticAction $action) => $action
+                        ->label('Kirim Surel Undangan')
+                        ->icon('heroicon-o-paper-airplane')
+                    )
+                    ->action(function (User $record): void {
+                        try {
+                            $token = \Illuminate\Support\Facades\Password::broker()->createToken($record);
+                            $record->forceFill([
+                                'token_undangan' => \Illuminate\Support\Str::random(60),
+                                'undangan_dikirim_pada' => now(),
+                            ])->saveQuietly();
+
+                            $tautanAktivasi = route('filament.admin.auth.password-reset.reset', [
+                                'token' => $token,
+                                'email' => $record->getEmailForPasswordReset(),
+                            ]);
+
+                            $record->notify(new \App\Notifications\UndanganPenggunaNotification($token));
+
+                            \App\Models\LogAudit::catat(
+                                tindakan: 'KIRIM_UNDANGAN_PENGGUNA',
+                                model: $record,
+                                rincian: [
+                                    'email' => $record->email,
+                                    'username' => $record->username,
+                                ]
+                            );
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Undangan Aktivasi Terkirim')
+                                ->body('Surel undangan aktivasi berhasil dikirimkan ke ' . $record->email)
+                                ->success()
+                                ->actions([
+                                    \Filament\Notifications\Actions\Action::make('salin_tautan')
+                                        ->label('Buka Tautan Aktivasi')
+                                        ->url($tautanAktivasi)
+                                        ->openUrlInNewTab(),
+                                ])
+                                ->send();
+                        } catch (\Throwable $e) {
+                            \Illuminate\Support\Facades\Log::error('Gagal mengirim surel aktivasi pengguna: ' . $e->getMessage(), [
+                                'email' => $record->email,
+                                'trace' => $e->getTraceAsString(),
+                            ]);
+
+                            $token = $token ?? \Illuminate\Support\Facades\Password::broker()->createToken($record);
+                            $tautanAktivasi = route('filament.admin.auth.password-reset.reset', [
+                                'token' => $token,
+                                'email' => $record->getEmailForPasswordReset(),
+                            ]);
+
+                            \Filament\Notifications\Notification::make()
+                                ->title('Pengiriman Surel Terkendala')
+                                ->body('Surel tidak dapat dikirim otomatis (' . $e->getMessage() . '). Tautan aktivasi tetap aktif dan dapat disalin langsung.')
+                                ->warning()
+                                ->persistent()
+                                ->actions([
+                                    \Filament\Notifications\Actions\Action::make('buka_tautan_darurat')
+                                        ->label('Buka Tautan Aktivasi')
+                                        ->url($tautanAktivasi)
+                                        ->openUrlInNewTab(),
+                                ])
+                                ->send();
+                        }
+                    }),
+                \Filament\Tables\Actions\Action::make('salin_tautan_aktivasi')
+                    ->label('Salin Tautan')
+                    ->icon('heroicon-o-link')
+                    ->color('info')
+                    ->visible(fn (User $record): bool => ! $record->hasVerifiedEmail())
                     ->action(function (User $record): void {
                         $token = \Illuminate\Support\Facades\Password::broker()->createToken($record);
                         $record->forceFill([
@@ -184,11 +253,31 @@ class UserResource extends Resource
                             'undangan_dikirim_pada' => now(),
                         ])->saveQuietly();
 
-                        $record->notify(new \App\Notifications\UndanganPenggunaNotification($token));
+                        $tautanAktivasi = route('filament.admin.auth.password-reset.reset', [
+                            'token' => $token,
+                            'email' => $record->getEmailForPasswordReset(),
+                        ]);
+
+                        \App\Models\LogAudit::catat(
+                            tindakan: 'BUAT_TAUTAN_AKTIVASI_PENGGUNA',
+                            model: $record,
+                            rincian: [
+                                'email' => $record->email,
+                                'username' => $record->username,
+                            ]
+                        );
 
                         \Filament\Notifications\Notification::make()
-                            ->title('Undangan aktivasi telah dimasukkan ke antrean pengiriman email untuk ' . $record->email)
-                            ->success()
+                            ->title('Tautan Aktivasi Siap')
+                            ->body('Tautan aktivasi untuk ' . $record->name . ' (' . $record->email . ') siap dibagikan ke staf.')
+                            ->info()
+                            ->persistent()
+                            ->actions([
+                                \Filament\Notifications\Actions\Action::make('buka_tautan')
+                                    ->label('Buka Tautan Aktivasi')
+                                    ->url($tautanAktivasi)
+                                    ->openUrlInNewTab(),
+                            ])
                             ->send();
                     }),
                 EditAction::make()

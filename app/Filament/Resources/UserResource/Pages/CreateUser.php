@@ -33,8 +33,15 @@ class CreateUser extends CreateRecord
         $record = $this->record;
 
         if (! empty($record->token_undangan)) {
-            $token = Password::broker()->createToken($record);
-            $record->notify(new UndanganPenggunaNotification($token));
+            try {
+                $token = Password::broker()->createToken($record);
+                $record->notify(new UndanganPenggunaNotification($token));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Gagal mengirim surel aktivasi saat pembuatan pengguna baru: ' . $e->getMessage(), [
+                    'email' => $record->email,
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
         }
     }
 
