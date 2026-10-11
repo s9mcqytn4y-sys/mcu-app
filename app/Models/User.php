@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -12,13 +13,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
-
-
 
     /**
      * Atribut yang dapat diisi secara massal.
@@ -100,7 +101,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
                     'menjadi' => (bool) $user->aktif,
                 ];
             }
-            if (!empty($perubahan)) {
+            if (! empty($perubahan)) {
                 LogAudit::catat(
                     tindakan: 'MODIFIKASI_AKSES_PENGGUNA',
                     model: $user,
@@ -114,7 +115,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
         static::deleted(function (User $user): void {
             // Bersihkan token reset password atau aktivasi yatim piatu di database
-            \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+            DB::table('password_reset_tokens')
                 ->where('email', $user->email)
                 ->delete();
 
@@ -136,7 +137,33 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return (bool) $this->aktif && in_array($this->peran, ['administrator', 'staf'], true);
+        // 1. Pengguna aktif dengan peran administrator atau staf memiliki akses penuh
+        if ((bool) $this->aktif && in_array($this->peran, ['administrator', 'staf'], true)) {
+            return true;
+        }
+
+        // 2. Izinkan akun menunggu aktivasi (aktif = 0) HANYA untuk alur setel ulang/aktivasi kata sandi
+        if (
+            ! (bool) $this->aktif
+            && ! empty($this->token_undangan)
+            && in_array($this->peran, ['administrator', 'staf'], true)
+        ) {
+            if (
+                request()->routeIs('*password-reset*')
+                || str_contains((string) request()->path(), 'password-reset')
+                || str_contains((string) request()->header('Referer', ''), 'password-reset')
+            ) {
+                return true;
+            }
+
+            foreach (debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15) as $trace) {
+                if (isset($trace['class']) && str_contains($trace['class'], 'ResetPassword')) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -192,7 +219,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
     {
-        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     /**
@@ -200,7 +227,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      */
     public function apakahOnline(): bool
     {
-        return \Illuminate\Support\Facades\Cache::has('user-online-' . $this->id);
+        return Cache::has('user-online-'.$this->id);
     }
 }
-

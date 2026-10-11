@@ -253,6 +253,7 @@
                                                 >
                                                     QR
                                                 </x-filament::button>
+                                            @endif
                                             @if (auth()->user()?->apakahAdministrator())
                                                 <x-filament::button
                                                     tag="a"

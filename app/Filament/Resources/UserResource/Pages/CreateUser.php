@@ -7,8 +7,13 @@ namespace App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource;
 use App\Models\User;
 use App\Notifications\UndanganPenggunaNotification;
+use Filament\Facades\Filament;
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 
@@ -33,18 +38,35 @@ class CreateUser extends CreateRecord
         $record = $this->record;
 
         if (! empty($record->token_undangan)) {
+            $token = null;
             try {
-                \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+                DB::table('password_reset_tokens')
                     ->where('email', $record->email)
                     ->delete();
 
                 $token = Password::broker()->createToken($record);
                 $record->notify(new UndanganPenggunaNotification($token));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Gagal mengirim surel aktivasi saat pembuatan pengguna baru: ' . $e->getMessage(), [
+                Log::error('Gagal mengirim surel aktivasi saat pembuatan pengguna baru: '.$e->getMessage(), [
                     'email' => $record->email,
                     'trace' => $e->getTraceAsString(),
                 ]);
+
+                $token = $token ?? Password::broker()->createToken($record);
+                $tautanAktivasi = Filament::getResetPasswordUrl($token, $record);
+
+                Notification::make()
+                    ->title('Pengiriman Surel Aktivasi Terkendala')
+                    ->body('Pengguna berhasil dibuat, namun surel undangan tidak dapat dikirim otomatis (kuota/layanan SMTP terkendala). Tautan aktivasi dapat disalin langsung.')
+                    ->warning()
+                    ->persistent()
+                    ->actions([
+                        Action::make('buka_tautan_darurat')
+                            ->label('Buka Tautan Aktivasi')
+                            ->url($tautanAktivasi)
+                            ->openUrlInNewTab(),
+                    ])
+                    ->send();
             }
         }
     }
@@ -60,7 +82,7 @@ class CreateUser extends CreateRecord
         $record = $this->record;
 
         return ! empty($record->token_undangan)
-            ? 'Pengguna baru berhasil dibuat dan undangan aktivasi telah dimasukkan ke antrean pengiriman email untuk ' . $record->email
+            ? 'Pengguna baru berhasil dibuat dan undangan aktivasi telah dimasukkan ke antrean pengiriman email untuk '.$record->email
             : 'Pengguna baru berhasil ditambahkan';
     }
 }

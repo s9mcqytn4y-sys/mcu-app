@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Models\LogAudit;
 use App\Models\User;
+use App\Notifications\UndanganPenggunaNotification;
+use Filament\Actions\StaticAction;
+use Filament\Facades\Filament;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
@@ -19,22 +25,33 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-users';
+
     protected static ?string $navigationLabel = 'Manajemen Pengguna';
+
     protected static ?string $modelLabel = 'Pengguna';
+
     protected static ?string $pluralModelLabel = 'Daftar Pengguna';
+
     protected static ?string $navigationGroup = 'Keamanan & Tata Kelola';
+
     protected static ?int $navigationSort = 4;
 
     public static function canAccess(): bool
     {
         /** @var User|null $user */
         $user = Auth::user();
+
         return $user !== null && $user->apakahAdministrator();
     }
 
@@ -100,6 +117,7 @@ class UserResource extends Resource
                             ->dehydrated(fn (?string $state): bool => filled($state))
                             ->required(false)
                             ->autocomplete('new-password')
+                            ->minLength(12)
                             ->maxLength(255)
                             ->extraInputAttributes(['class' => 'min-h-[44px]']),
 
@@ -182,7 +200,7 @@ class UserResource extends Resource
                     ]),
             ])
             ->actions([
-                \Filament\Tables\Actions\Action::make('kirim_undangan')
+                Action::make('kirim_undangan')
                     ->label('Kirim Undangan')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('warning')
@@ -190,27 +208,27 @@ class UserResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Kirim Ulang Undangan Aktivasi')
                     ->modalDescription('Tautan aktivasi akun dan penyetelan kata sandi baru akan dikirimkan ke alamat email pengguna.')
-                    ->modalSubmitAction(fn (\Filament\Actions\StaticAction $action) => $action
+                    ->modalSubmitAction(fn (StaticAction $action) => $action
                         ->label('Kirim Surel Undangan')
                         ->icon('heroicon-o-paper-airplane')
                     )
-                    ->action(function (User $record, \Filament\Tables\Actions\Action $action): void {
+                    ->action(function (User $record, Action $action): void {
                         try {
-                            \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+                            DB::table('password_reset_tokens')
                                 ->where('email', $record->email)
                                 ->delete();
 
-                            $token = \Illuminate\Support\Facades\Password::broker()->createToken($record);
+                            $token = Password::broker()->createToken($record);
                             $record->forceFill([
-                                'token_undangan' => \Illuminate\Support\Str::random(60),
+                                'token_undangan' => Str::random(60),
                                 'undangan_dikirim_pada' => now(),
                             ])->saveQuietly();
 
-                            $tautanAktivasi = \Filament\Facades\Filament::getResetPasswordUrl($token, $record);
+                            $tautanAktivasi = Filament::getResetPasswordUrl($token, $record);
 
-                            $record->notify(new \App\Notifications\UndanganPenggunaNotification($token));
+                            $record->notify(new UndanganPenggunaNotification($token));
 
-                            \App\Models\LogAudit::catat(
+                            LogAudit::catat(
                                 tindakan: 'kirim_undangan_pengguna',
                                 model: $record,
                                 rincian: [
@@ -219,9 +237,9 @@ class UserResource extends Resource
                                 ]
                             );
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Undangan Aktivasi Terkirim')
-                                ->body('Surel undangan aktivasi berhasil dikirimkan ke ' . $record->email)
+                                ->body('Surel undangan aktivasi berhasil dikirimkan ke '.$record->email)
                                 ->success()
                                 ->actions([
                                     \Filament\Notifications\Actions\Action::make('salin_tautan')
@@ -231,17 +249,17 @@ class UserResource extends Resource
                                 ])
                                 ->send();
                         } catch (\Throwable $e) {
-                            \Illuminate\Support\Facades\Log::error('Gagal mengirim surel aktivasi pengguna: ' . $e->getMessage(), [
+                            Log::error('Gagal mengirim surel aktivasi pengguna: '.$e->getMessage(), [
                                 'email' => $record->email,
                                 'trace' => $e->getTraceAsString(),
                             ]);
 
-                            $token = $token ?? \Illuminate\Support\Facades\Password::broker()->createToken($record);
-                            $tautanAktivasi = \Filament\Facades\Filament::getResetPasswordUrl($token, $record);
+                            $token = $token ?? Password::broker()->createToken($record);
+                            $tautanAktivasi = Filament::getResetPasswordUrl($token, $record);
 
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Pengiriman Surel Terkendala')
-                                ->body('Surel tidak dapat dikirim otomatis (' . $e->getMessage() . '). Tautan aktivasi tetap aktif dan dapat disalin langsung.')
+                                ->body('Surel undangan tidak dapat terkirim otomatis (layanan surel sedang terkendala atau kuota/langganan surel telah habis). Tautan aktivasi tetap aktif dan dapat disalin langsung melalui tombol di bawah atau tombol Salin Tautan.')
                                 ->warning()
                                 ->persistent()
                                 ->actions([
@@ -253,24 +271,24 @@ class UserResource extends Resource
                                 ->send();
                         }
                     }),
-                \Filament\Tables\Actions\Action::make('salin_tautan_aktivasi')
+                Action::make('salin_tautan_aktivasi')
                     ->label('Salin Tautan')
                     ->icon('heroicon-o-link')
                     ->color('info')
                     ->visible(fn (User $record): bool => ! $record->hasVerifiedEmail())
-                    ->action(function (User $record, \Filament\Tables\Actions\Action $action): void {
-                        $token = \Illuminate\Support\Facades\Password::broker()->createToken($record);
+                    ->action(function (User $record, Action $action): void {
+                        $token = Password::broker()->createToken($record);
                         $record->forceFill([
-                            'token_undangan' => \Illuminate\Support\Str::random(60),
+                            'token_undangan' => Str::random(60),
                             'undangan_dikirim_pada' => now(),
                         ])->saveQuietly();
 
-                        $tautanAktivasi = \Filament\Facades\Filament::getResetPasswordUrl($token, $record);
+                        $tautanAktivasi = Filament::getResetPasswordUrl($token, $record);
 
                         // Salin langsung ke clipboard pengguna di peramban
-                        $action->getLivewire()->js('navigator.clipboard.writeText(' . json_encode($tautanAktivasi) . ')');
+                        $action->getLivewire()->js('navigator.clipboard.writeText('.json_encode($tautanAktivasi).')');
 
-                        \App\Models\LogAudit::catat(
+                        LogAudit::catat(
                             tindakan: 'salin_tautan_aktivasi',
                             model: $record,
                             rincian: [
@@ -279,9 +297,9 @@ class UserResource extends Resource
                             ]
                         );
 
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('Tautan Aktivasi Telah Disalin')
-                            ->body('Tautan aktivasi untuk ' . $record->name . ' (' . $record->email . ') otomatis tersalin ke papan klip.')
+                            ->body('Tautan aktivasi untuk '.$record->name.' ('.$record->email.') otomatis tersalin ke papan klip.')
                             ->success()
                             ->actions([
                                 \Filament\Notifications\Actions\Action::make('buka_tautan')

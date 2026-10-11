@@ -9,10 +9,12 @@ use App\Notifications\ResetPasswordNotification;
 use App\Notifications\UndanganPenggunaNotification;
 use Database\Seeders\McuSeeder;
 use Database\Seeders\UserSeeder;
+use Filament\Facades\Filament;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class AuthTest extends TestCase
@@ -72,7 +74,7 @@ class AuthTest extends TestCase
     {
         App::detectEnvironment(fn () => 'production');
 
-        $userSeeder = new UserSeeder();
+        $userSeeder = new UserSeeder;
         $userSeeder->run();
 
         $this->assertDatabaseMissing('users', [
@@ -85,7 +87,7 @@ class AuthTest extends TestCase
             'username' => 'staff',
         ]);
 
-        $mcuSeeder = new McuSeeder();
+        $mcuSeeder = new McuSeeder;
         $mcuSeeder->run();
 
         $this->assertDatabaseMissing('pasien', [
@@ -124,5 +126,62 @@ class AuthTest extends TestCase
         $this->assertStringContainsString('Salam hangat,', $mailReset->salutation);
         $this->assertStringContainsString('Klinik Indosehat 2003', $mailReset->salutation);
         $this->assertStringNotContainsString('Tim IT & Keamanan Sistem', $mailReset->salutation);
+    }
+
+    /**
+     * Memastikan pengguna belum aktif (aktif = 0) dengan token_undangan dapat mengakses alur reset kata sandi,
+     * tetapi ditolak saat mencoba login/mengakses panel secara langsung tanpa token.
+     */
+    public function test_pengguna_belum_aktif_dengan_token_undangan_diizinkan_pada_alur_reset_password_tetapi_ditolak_pada_panel_biasa(): void
+    {
+        $panel = Filament::getCurrentPanel() ?? Filament::getPanel('admin');
+
+        $inactiveUser = User::create([
+            'username' => 'staf_baru',
+            'name' => 'Staf Baru Medis',
+            'email' => 'stafbaru@indosehat2003.com',
+            'password' => Hash::make('KlinikSehat#2026'),
+            'peran' => 'staf',
+            'aktif' => false,
+            'token_undangan' => Str::random(60),
+        ]);
+
+        // 1. Pada konteks biasa (bukan reset password), canAccessPanel harus FALSE
+        $this->assertFalse($inactiveUser->canAccessPanel($panel));
+
+        // 2. Pada konteks rute password-reset, canAccessPanel harus TRUE
+        $this->get('/admin/password-reset/request');
+        $this->assertTrue($inactiveUser->canAccessPanel($panel));
+    }
+
+    /**
+     * Memastikan event PasswordReset mengaktifkan pengguna, mengisi email_verified_at,
+     * membersihkan token_undangan, dan mencatat log audit.
+     */
+    public function test_password_reset_event_mengaktifkan_pengguna_dan_mencatat_audit(): void
+    {
+        $inactiveUser = User::create([
+            'username' => 'staf_aktivasi',
+            'name' => 'Staf Aktivasi',
+            'email' => 'aktivasi@indosehat2003.com',
+            'password' => Hash::make('KlinikSehat#2026'),
+            'peran' => 'staf',
+            'aktif' => false,
+            'token_undangan' => 'token-undangan-awal',
+            'email_verified_at' => null,
+        ]);
+
+        event(new PasswordReset($inactiveUser));
+
+        $inactiveUser->refresh();
+
+        $this->assertTrue((bool) $inactiveUser->aktif);
+        $this->assertNotNull($inactiveUser->email_verified_at);
+        $this->assertNull($inactiveUser->token_undangan);
+
+        $this->assertDatabaseHas('log_audit', [
+            'tindakan' => 'aktivasi_akun_sukses',
+            'id_pengguna' => $inactiveUser->id,
+        ]);
     }
 }

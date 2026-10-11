@@ -16,6 +16,9 @@ Schedule::command('queue:work database --stop-when-empty --tries=3 --timeout=45'
     ->everyMinute()
     ->withoutOverlapping(10);
 
-// Pembersihan berkas unduhan/cache sementara setiap hari
+// Pembersihan berkas unduhan/cache sementara dan token reset kedaluwarsa setiap hari
 Schedule::command('queue:prune-failed --hours=48')
+    ->daily();
+
+Schedule::command('auth:clear-resets')
     ->daily();
