@@ -13,10 +13,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Exceptions\Halt;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class EditPemeriksaanMcu extends EditRecord
 {
@@ -106,7 +108,11 @@ class EditPemeriksaanMcu extends EditRecord
     {
         $action = parent::getSaveFormAction()
             ->keyBindings(['mod+s'])
-            ->label('Simpan Perubahan (Ctrl+S)');
+            ->label('Simpan Perubahan (Ctrl+S)')
+            ->extraAttributes([
+                'wire:loading.attr' => 'disabled',
+                'wire:target' => 'save',
+            ]);
 
         /** @var \App\Models\User|null $user */
         $user = Auth::user();
@@ -156,34 +162,49 @@ class EditPemeriksaanMcu extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
+        try {
+            return DB::transaction(function () use ($record, $data) {
+                $lampiranPath = $data['lampiran_file'] ?? null;
+                unset(
+                    $data['lampiran_file'],
+                    $data['pasien_nama_display'],
+                    $data['pasien_nik_display'],
+                    $data['pasien_jk_display'],
+                    $data['pasien_tgl_lahir_display'],
+                    $data['pasien_paspor_display']
+                );
 
-        return DB::transaction(function () use ($record, $data) {
-            $lampiranPath = $data['lampiran_file'] ?? null;
-            unset(
-                $data['lampiran_file'],
-                $data['pasien_nama_display'],
-                $data['pasien_nik_display'],
-                $data['pasien_jk_display'],
-                $data['pasien_tgl_lahir_display'],
-                $data['pasien_paspor_display']
-            );
-
-            if (! empty($lampiranPath)) {
-                $lampiran = $record->lampiranMcu()->first();
-                if ($lampiran) {
-                    $lampiran->update(['path_berkas' => $lampiranPath]);
-                } else {
-                    $record->lampiranMcu()->create([
-                        'path_berkas' => $lampiranPath,
-                        'jenis_lampiran' => 'sertifikat',
-                    ]);
+                if (! empty($lampiranPath)) {
+                    $lampiran = $record->lampiranMcu()->first();
+                    if ($lampiran) {
+                        $lampiran->update(['path_berkas' => $lampiranPath]);
+                    } else {
+                        $record->lampiranMcu()->create([
+                            'path_berkas' => $lampiranPath,
+                            'jenis_lampiran' => 'sertifikat',
+                        ]);
+                    }
                 }
-            }
 
-            $record->update($data);
+                $record->update($data);
 
-            return $record;
-        });
+                return $record;
+            });
+        } catch (\Throwable $e) {
+            Log::error('Gagal memperbarui pemeriksaan MCU: ' . $e->getMessage(), [
+                'record_id' => $record->id,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            Notification::make()
+                ->title('Gagal Menyimpan Perubahan MCU')
+                ->body('Terjadi kesalahan saat memperbarui data. Perubahan telah dibatalkan secara aman: ' . $e->getMessage())
+                ->danger()
+                ->persistent()
+                ->send();
+
+            throw (new Halt())->rollBackDatabaseTransaction(true);
+        }
     }
 
     protected function afterSave(): void

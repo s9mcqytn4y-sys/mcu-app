@@ -25,6 +25,10 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Notifications\Notification;
+use Filament\Support\Exceptions\Halt;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PemeriksaanMcuResource extends Resource
 {
@@ -32,9 +36,27 @@ class PemeriksaanMcuResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static ?string $navigationLabel = 'Pemeriksaan MCU';
     protected static ?string $modelLabel = 'Pemeriksaan MCU';
-    protected static ?string $pluralModelLabel = 'Daftar Pemeriksaan MCU';
     protected static ?string $navigationGroup = 'Klinik & Operasional';
     protected static ?int $navigationSort = 2;
+
+    public static function getNavigationBadge(): ?string
+    {
+        if (session('mcu_badge_viewed', false)) {
+            return null;
+        }
+
+        $count = static::getModel()::query()
+            ->whereDate('tanggal_periksa', now()->toDateString())
+            ->orWhereIn('status_kelayakan', ['UNFIT', 'TEMPORARY UNFIT'])
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
+    }
 
     public static function form(Form $form): Form
     {
@@ -114,7 +136,63 @@ class PemeriksaanMcuResource extends Resource
                                             ->createOptionAction(fn (\Filament\Forms\Components\Actions\Action $action) => $action
                                                 ->modalHeading('Daftarkan Rekam Pasien Baru')
                                                 ->modalSubmitActionLabel('Simpan Pasien')
+                                                ->extraModalFooterActions([
+                                                    \Filament\Forms\Components\Actions\Action::make('batal')
+                                                        ->label('Batal')
+                                                        ->color('gray')
+                                                        ->cancel(),
+                                                ])
                                             )
+                                            ->createOptionUsing(function (array $data): int {
+                                                try {
+                                                    return DB::transaction(function () use ($data): int {
+                                                        $nikClean = trim((string) ($data['no_ktp'] ?? ''));
+                                                        $namaClean = trim((string) ($data['nama'] ?? ''));
+
+                                                        // Cek apakah NIK sudah terdaftar sebelumnya
+                                                        $existing = \App\Models\Pasien::where('no_ktp', $nikClean)->first();
+                                                        if ($existing) {
+                                                            Notification::make()
+                                                                ->title('NIK Sudah Terdaftar')
+                                                                ->body("Pasien dengan NIK {$nikClean} sudah ada di sistem ({$existing->nama}). Otomatis dipilih.")
+                                                                ->info()
+                                                                ->send();
+
+                                                            return $existing->id;
+                                                        }
+
+                                                        $pasien = \App\Models\Pasien::create([
+                                                            'nama' => $namaClean,
+                                                            'jenis_kelamin' => $data['jenis_kelamin'],
+                                                            'tanggal_lahir' => $data['tanggal_lahir'],
+                                                            'no_ktp' => $nikClean,
+                                                            'no_paspor' => ! empty($data['no_paspor']) ? trim((string) $data['no_paspor']) : null,
+                                                        ]);
+
+                                                        Notification::make()
+                                                            ->title('Pasien Berhasil Didaftarkan')
+                                                            ->body("Rekam pasien {$pasien->nama} telah tersimpan.")
+                                                            ->success()
+                                                            ->send();
+
+                                                        return $pasien->id;
+                                                    });
+                                                } catch (\Throwable $e) {
+                                                    Log::error('Gagal membuat pasien baru dari modal MCU: ' . $e->getMessage(), [
+                                                        'exception' => $e,
+                                                        'data' => $data,
+                                                    ]);
+
+                                                    Notification::make()
+                                                        ->title('Gagal Mendaftarkan Pasien')
+                                                        ->body('Terjadi kendala teknis saat menyimpan data pasien: ' . $e->getMessage())
+                                                        ->danger()
+                                                        ->persistent()
+                                                        ->send();
+
+                                                    throw (new Halt())->rollBackDatabaseTransaction(true);
+                                                }
+                                            })
                                             ->helperText('Cari berdasarkan nama atau NIK. Jika pasien belum terdaftar, klik ikon (+) untuk menambahkan pasien baru tanpa menimpa data orang lain.'),
 
                                         // Ringkasan Identitas Pasien (Read-Only)

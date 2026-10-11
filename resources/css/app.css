@@ -69,8 +69,8 @@ input:-webkit-autofill:active {
 
 /* Topbar subtle elevation & backdrop blur */
 .fi-topbar {
-    backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     border-bottom: 1px solid rgba(226, 232, 240, 0.6);
 }
 

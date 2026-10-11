@@ -22,6 +22,7 @@
                         icon="heroicon-m-plus-circle"
                         color="danger"
                         size="lg"
+                        class="min-h-11 shadow-sm transition hover:scale-[1.02] active:scale-[0.98]"
                     >
                         Input MCU Baru
                     </x-filament::button>
@@ -31,6 +32,7 @@
                         icon="heroicon-m-user-plus"
                         color="gray"
                         size="lg"
+                        class="min-h-11 transition hover:scale-[1.02] active:scale-[0.98]"
                     >
                         Registrasi Pasien
                     </x-filament::button>
@@ -41,6 +43,7 @@
                         color="gray"
                         outlined="true"
                         size="lg"
+                        class="min-h-11 transition hover:scale-[1.02] active:scale-[0.98]"
                     >
                         Cari Pasien
                     </x-filament::button>
@@ -54,6 +57,7 @@
             $hariIniCount = $this->getPemeriksaanHariIniCount();
             $totalPasien = $this->getTotalPasienCount();
             $totalMcu = $this->getTotalMcuCount();
+            $kanbanData = $this->getKanbanPemeriksaan();
         @endphp
 
         <x-filament::grid default="1" sm="2" lg="4" class="gap-4">
@@ -135,6 +139,192 @@
                 </div>
             </x-filament::section>
         </x-filament::grid>
+
+        {{-- Papan Kanban Visual Status Alur Kerja MCU --}}
+        <x-filament::section>
+            <x-slot name="heading">
+                Papan Status Kelayakan Medis (Alur Kerja Klinis)
+            </x-slot>
+            <x-slot name="description">
+                Pemantauan visual alur sertifikasi kerja medis berdasarkan status kelayakan pasien terkini.
+            </x-slot>
+            <x-slot name="headerEnd">
+                <x-filament::link
+                    href="{{ $this->getUrlDaftarPemeriksaan() }}"
+                    color="gray"
+                    size="sm"
+                    icon="heroicon-m-arrows-pointing-out"
+                    icon-position="after"
+                >
+                    Kelola di Tabel
+                </x-filament::link>
+            </x-slot>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                {{-- Kolom 1: Draf / Proses --}}
+                <div class="flex flex-col rounded-xl border border-slate-200 bg-slate-50/70 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+                    <div class="flex items-center justify-between border-b border-slate-200/80 pb-2.5 dark:border-slate-800">
+                        <div class="flex items-center gap-2">
+                            <span class="size-2 rounded-full bg-slate-400"></span>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">Draf / Proses</h3>
+                        </div>
+                        <span class="rounded-full bg-slate-200/80 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                            {{ $kanbanData['DRAF']->count() }}
+                        </span>
+                    </div>
+                    <div class="mt-3 flex flex-1 flex-col gap-2.5">
+                        @forelse($kanbanData['DRAF'] as $item)
+                            <div class="group relative rounded-lg border border-slate-200 bg-white p-3 shadow-xs transition hover:border-slate-400 dark:border-slate-800 dark:bg-slate-950 dark:hover:border-slate-700">
+                                <div class="flex items-start justify-between gap-1">
+                                    <span class="font-mono text-xs font-semibold text-slate-900 dark:text-white">{{ $item->nomor_mcu }}</span>
+                                    <x-filament::badge color="gray" size="sm">Draf</x-filament::badge>
+                                </div>
+                                <div class="mt-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                    {{ $item->pasien?->nama ?? 'Pasien Belum Ditautkan' }}
+                                </div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400">
+                                    {{ $item->nama_perusahaan ?? 'Pemeriksaan Mandiri' }}
+                                </div>
+                                <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                                    <span>{{ $item->tanggal_periksa ? $item->tanggal_periksa->format('d/m/Y') : '-' }}</span>
+                                    <a href="{{ \App\Filament\Resources\PemeriksaanMcuResource::getUrl('edit', ['record' => $item->id]) }}" class="font-semibold text-primary-600 hover:underline dark:text-primary-400">
+                                        Lanjutkan &rarr;
+                                    </a>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="flex flex-1 items-center justify-center rounded-lg border border-dashed border-slate-200 p-6 text-center text-xs text-slate-400 dark:border-slate-800">
+                                Tidak ada draf tertunda
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- Kolom 2: FIT --}}
+                <div class="flex flex-col rounded-xl border border-emerald-200 bg-emerald-50/40 p-3 dark:border-emerald-950/60 dark:bg-emerald-950/20">
+                    <div class="flex items-center justify-between border-b border-emerald-200/80 pb-2.5 dark:border-emerald-900/50">
+                        <div class="flex items-center gap-2">
+                            <span class="size-2 rounded-full bg-emerald-500"></span>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300">FIT (Laik Kerja)</h3>
+                        </div>
+                        <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">
+                            {{ $kanbanData['FIT']->count() }}
+                        </span>
+                    </div>
+                    <div class="mt-3 flex flex-1 flex-col gap-2.5">
+                        @forelse($kanbanData['FIT'] as $item)
+                            <div class="group relative rounded-lg border border-emerald-100 bg-white p-3 shadow-xs transition hover:border-emerald-300 dark:border-emerald-900/40 dark:bg-slate-950 dark:hover:border-emerald-700">
+                                <div class="flex items-start justify-between gap-1">
+                                    <span class="font-mono text-xs font-semibold text-slate-900 dark:text-white">{{ $item->nomor_mcu }}</span>
+                                    <x-filament::badge color="success" size="sm">FIT</x-filament::badge>
+                                </div>
+                                <div class="mt-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                    {{ $item->pasien?->nama ?? '-' }}
+                                </div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400">
+                                    {{ $item->nama_perusahaan ?? 'Perusahaan Umum' }}
+                                </div>
+                                <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                                    <span>Exp: {{ $item->berlaku_sampai ? $item->berlaku_sampai->format('d/m/Y') : '-' }}</span>
+                                    <div class="flex items-center gap-2">
+                                        @if($item->token_verifikasi)
+                                            <a href="{{ url('/v/' . $item->token_verifikasi) }}" target="_blank" class="font-medium text-emerald-600 hover:underline dark:text-emerald-400">
+                                                QR
+                                            </a>
+                                        @endif
+                                        <a href="{{ \App\Filament\Resources\PemeriksaanMcuResource::getUrl('edit', ['record' => $item->id]) }}" class="font-medium text-slate-600 hover:underline dark:text-slate-400">
+                                            Detail
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="flex flex-1 items-center justify-center rounded-lg border border-dashed border-emerald-200 p-6 text-center text-xs text-emerald-600/70 dark:border-emerald-900/60">
+                                Belum ada sertifikat FIT
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- Kolom 3: TEMPORARY UNFIT --}}
+                <div class="flex flex-col rounded-xl border border-amber-200 bg-amber-50/40 p-3 dark:border-amber-950/60 dark:bg-amber-950/20">
+                    <div class="flex items-center justify-between border-b border-amber-200/80 pb-2.5 dark:border-amber-900/50">
+                        <div class="flex items-center gap-2">
+                            <span class="size-2 rounded-full bg-amber-500"></span>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">Temporary Unfit</h3>
+                        </div>
+                        <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800 dark:bg-amber-900/60 dark:text-amber-200">
+                            {{ $kanbanData['TEMPORARY UNFIT']->count() }}
+                        </span>
+                    </div>
+                    <div class="mt-3 flex flex-1 flex-col gap-2.5">
+                        @forelse($kanbanData['TEMPORARY UNFIT'] as $item)
+                            <div class="group relative rounded-lg border border-amber-100 bg-white p-3 shadow-xs transition hover:border-amber-300 dark:border-amber-900/40 dark:bg-slate-950 dark:hover:border-amber-700">
+                                <div class="flex items-start justify-between gap-1">
+                                    <span class="font-mono text-xs font-semibold text-slate-900 dark:text-white">{{ $item->nomor_mcu }}</span>
+                                    <x-filament::badge color="warning" size="sm">Temp Unfit</x-filament::badge>
+                                </div>
+                                <div class="mt-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                    {{ $item->pasien?->nama ?? '-' }}
+                                </div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400">
+                                    {{ $item->nama_perusahaan ?? '-' }}
+                                </div>
+                                <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                                    <span>Tgl: {{ $item->tanggal_periksa ? $item->tanggal_periksa->format('d/m/Y') : '-' }}</span>
+                                    <a href="{{ \App\Filament\Resources\PemeriksaanMcuResource::getUrl('edit', ['record' => $item->id]) }}" class="font-semibold text-amber-600 hover:underline dark:text-amber-400">
+                                        Evaluasi &rarr;
+                                    </a>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="flex flex-1 items-center justify-center rounded-lg border border-dashed border-amber-200 p-6 text-center text-xs text-amber-600/70 dark:border-amber-900/60">
+                                Tidak ada pasien evaluasi
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+
+                {{-- Kolom 4: UNFIT / DICABUT --}}
+                <div class="flex flex-col rounded-xl border border-rose-200 bg-rose-50/40 p-3 dark:border-rose-950/60 dark:bg-rose-950/20">
+                    <div class="flex items-center justify-between border-b border-rose-200/80 pb-2.5 dark:border-rose-900/50">
+                        <div class="flex items-center gap-2">
+                            <span class="size-2 rounded-full bg-rose-500"></span>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-rose-800 dark:text-rose-300">UNFIT / Dicabut</h3>
+                        </div>
+                        <span class="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-semibold text-rose-800 dark:bg-rose-900/60 dark:text-rose-200">
+                            {{ $kanbanData['UNFIT']->count() }}
+                        </span>
+                    </div>
+                    <div class="mt-3 flex flex-1 flex-col gap-2.5">
+                        @forelse($kanbanData['UNFIT'] as $item)
+                            <div class="group relative rounded-lg border border-rose-100 bg-white p-3 shadow-xs transition hover:border-rose-300 dark:border-rose-900/40 dark:bg-slate-950 dark:hover:border-rose-700">
+                                <div class="flex items-start justify-between gap-1">
+                                    <span class="font-mono text-xs font-semibold text-slate-900 dark:text-white">{{ $item->nomor_mcu }}</span>
+                                    <x-filament::badge color="danger" size="sm">UNFIT</x-filament::badge>
+                                </div>
+                                <div class="mt-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100">
+                                    {{ $item->pasien?->nama ?? '-' }}
+                                </div>
+                                <div class="text-xs text-slate-500 dark:text-slate-400">
+                                    {{ $item->nama_perusahaan ?? '-' }}
+                                </div>
+                                <div class="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                                    <span>Tgl: {{ $item->tanggal_periksa ? $item->tanggal_periksa->format('d/m/Y') : '-' }}</span>
+                                    <a href="{{ \App\Filament\Resources\PemeriksaanMcuResource::getUrl('edit', ['record' => $item->id]) }}" class="font-semibold text-rose-600 hover:underline dark:text-rose-400">
+                                        Tinjau &rarr;
+                                    </a>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="flex flex-1 items-center justify-center rounded-lg border border-dashed border-rose-200 p-6 text-center text-xs text-rose-600/70 dark:border-rose-900/60">
+                                Tidak ada pasien UNFIT
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            </div>
+        </x-filament::section>
 
         {{-- Tabel Aktivitas Pemeriksaan Terkini --}}
         <x-filament::section>

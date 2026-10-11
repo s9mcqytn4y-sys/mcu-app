@@ -47,7 +47,7 @@ class SeoAndPwaTest extends TestCase
         $manifestContent = (string) file_get_contents($manifestPath);
         $manifestJson = json_decode($manifestContent, true);
         $this->assertIsArray($manifestJson);
-        $this->assertEquals('Klinik Indosehat 2003 - Portal MCU', $manifestJson['name']);
+        $this->assertEquals('Indosehat 2003 Portal MCU', $manifestJson['name']);
         $this->assertEquals('standalone', $manifestJson['display']);
 
         $swPath = public_path('sw.js');

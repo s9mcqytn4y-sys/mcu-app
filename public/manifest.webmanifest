@@ -1,6 +1,6 @@
 {
-  "name": "Klinik Indosehat 2003 - Portal MCU",
-  "short_name": "Indosehat MCU",
+  "name": "Indosehat 2003 Portal MCU",
+  "short_name": "Indosehat",
   "description": "Portal Resmi Sertifikasi & Verifikasi Medical Check-Up Klinik Indosehat 2003",
   "start_url": "/",
   "display": "standalone",

@@ -89,6 +89,12 @@ class Login extends BaseLogin
             ->label('Masuk ke Sistem')
             ->icon('heroicon-m-arrow-right-end-on-rectangle')
             ->iconPosition('after')
+            ->size('lg')
+            ->extraAttributes([
+                'wire:loading.attr' => 'disabled',
+                'wire:target' => 'authenticate',
+                'class' => 'w-full min-h-11 transition hover:scale-[1.01] active:scale-[0.99]',
+            ])
             ->submit('authenticate');
     }
 
@@ -98,12 +104,12 @@ class Login extends BaseLogin
      */
     protected function getCredentialsFromFormData(array $data): array
     {
-        $login = (string) ($data['login'] ?? '');
+        $login = trim((string) ($data['login'] ?? ''));
         $loginType = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
         return [
             $loginType => $login,
-            'password' => $data['password'] ?? '',
+            'password' => (string) ($data['password'] ?? ''),
         ];
     }
 

@@ -31,7 +31,11 @@ class CreatePemeriksaanMcu extends CreateRecord
     {
         return parent::getCreateFormAction()
             ->keyBindings(['mod+s'])
-            ->label('Terbitkan Sertifikat (Ctrl+S)');
+            ->label('Terbitkan Sertifikat (Ctrl+S)')
+            ->extraAttributes([
+                'wire:loading.attr' => 'disabled',
+                'wire:target' => 'create',
+            ]);
     }
 
     protected function getCancelFormAction(): \Filament\Actions\Action
@@ -48,26 +52,42 @@ class CreatePemeriksaanMcu extends CreateRecord
             throw new \Illuminate\Auth\AuthenticationException('Autentikasi diperlukan. Pengguna harus login untuk menerbitkan sertifikat MCU.');
         }
 
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($data, $userId) {
-            $lampiranPath = $data['lampiran_file'] ?? null;
-            unset($data['lampiran_file'], $data['pasien_nama_display'], $data['pasien_nik_display'], $data['pasien_jk_display'], $data['pasien_tgl_lahir_display'], $data['pasien_paspor_display']);
+        try {
+            return \Illuminate\Support\Facades\DB::transaction(function () use ($data, $userId) {
+                $lampiranPath = $data['lampiran_file'] ?? null;
+                unset($data['lampiran_file'], $data['pasien_nama_display'], $data['pasien_nik_display'], $data['pasien_jk_display'], $data['pasien_tgl_lahir_display'], $data['pasien_paspor_display']);
 
-            $data['nomor_mcu'] = app(\App\Actions\Mcu\GenerateNomorMcuAction::class)->generate();
-            $data['token_verifikasi'] = (string) Str::uuid();
-            $data['dibuat_oleh'] = $userId;
+                $data['nomor_mcu'] = app(\App\Actions\Mcu\GenerateNomorMcuAction::class)->generate();
+                $data['token_verifikasi'] = (string) Str::uuid();
+                $data['dibuat_oleh'] = $userId;
 
-            /** @var \App\Models\PemeriksaanMcu $record */
-            $record = static::getModel()::create($data);
+                /** @var \App\Models\PemeriksaanMcu $record */
+                $record = static::getModel()::create($data);
 
-            if (! empty($lampiranPath)) {
-                $record->lampiranMcu()->create([
-                    'path_berkas' => $lampiranPath,
-                    'jenis_lampiran' => 'sertifikat',
-                ]);
-            }
+                if (! empty($lampiranPath)) {
+                    $record->lampiranMcu()->create([
+                        'path_berkas' => $lampiranPath,
+                        'jenis_lampiran' => 'sertifikat',
+                    ]);
+                }
 
-            return $record;
-        });
+                return $record;
+            });
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal menerbitkan sertifikat MCU: ' . $e->getMessage(), [
+                'exception' => $e,
+                'data' => $data,
+            ]);
+
+            \Filament\Notifications\Notification::make()
+                ->title('Gagal Menerbitkan Sertifikat')
+                ->body('Terjadi kesalahan teknis saat menyimpan pemeriksaan: ' . $e->getMessage())
+                ->danger()
+                ->persistent()
+                ->send();
+
+            throw (new \Filament\Support\Exceptions\Halt())->rollBackDatabaseTransaction(true);
+        }
     }
 
     protected function afterCreate(): void

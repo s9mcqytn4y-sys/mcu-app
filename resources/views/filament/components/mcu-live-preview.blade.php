@@ -70,7 +70,7 @@
         </div>
         <div class="flex justify-between items-start py-2.5 gap-2">
             <span class="text-slate-400 font-medium shrink-0">Nama Pasien:</span>
-            <span class="font-semibold text-slate-100 text-right break-words">{{ $nama }}</span>
+            <span class="font-semibold text-slate-100 text-right wrap-break-word">{{ $nama }}</span>
         </div>
         <div class="flex justify-between items-start py-2.5 gap-2">
             <span class="text-slate-400 font-medium shrink-0">Nomor MCU:</span>
@@ -78,7 +78,7 @@
         </div>
         <div class="flex justify-between items-start pt-2.5 gap-2">
             <span class="text-slate-400 font-medium shrink-0">Perusahaan:</span>
-            <span class="font-medium text-slate-300 text-right break-words">{{ $perusahaan }}</span>
+            <span class="font-medium text-slate-300 text-right wrap-break-word">{{ $perusahaan }}</span>
         </div>
     </div>
 
