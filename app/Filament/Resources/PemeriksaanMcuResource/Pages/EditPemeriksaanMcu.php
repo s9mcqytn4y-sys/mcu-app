@@ -141,15 +141,21 @@ class EditPemeriksaanMcu extends EditRecord
         return $data;
     }
 
+    protected function getSavedNotification(): ?Notification
+    {
+        return Notification::make()
+            ->success()
+            ->title('Perubahan Data MCU Berhasil Disimpan')
+            ->body('Data pemeriksaan MCU ' . $this->record->nomor_mcu . ' untuk pasien ' . ($this->record->pasien?->nama ?? 'Pasien') . ' telah diperbarui.');
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('index');
+    }
+
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        /** @var \App\Models\User|null $user */
-        $user = Auth::user();
-        $isPublished = in_array($record->status_kelayakan, ['FIT', 'UNFIT', 'DICABUT'], true);
-
-        if ($isPublished && ($user === null || ! $user->apakahAdministrator())) {
-            throw new AuthorizationException('Sertifikat yang telah terbit hanya dapat diubah oleh Administrator melalui prosedur Revisi Klinis.');
-        }
 
         return DB::transaction(function () use ($record, $data) {
             $lampiranPath = $data['lampiran_file'] ?? null;

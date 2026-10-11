@@ -80,6 +80,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 \App\Http\Middleware\PreventSensitiveCaching::class,
+                \App\Http\Middleware\TrackUserOnlineStatus::class,
             ])
             ->authMiddleware([
                 Authenticate::class,

@@ -155,22 +155,7 @@ class PemeriksaanMcuResource extends Resource
                                                 ->default('FIT')
                                                 ->required()
                                                 ->native(false)
-                                                ->disabled(function (?PemeriksaanMcu $record): bool {
-                                                    if ($record === null) {
-                                                        return false;
-                                                    }
-                                                    /** @var \App\Models\User|null $user */
-                                                    $user = \Illuminate\Support\Facades\Auth::user();
-                                                    $isPublished = in_array($record->status_kelayakan, ['FIT', 'UNFIT', 'DICABUT'], true);
-
-                                                    return $isPublished && ($user === null || ! $user->apakahAdministrator());
-                                                })
-                                                ->helperText(function (?PemeriksaanMcu $record): ?string {
-                                                    if ($record && in_array($record->status_kelayakan, ['FIT', 'UNFIT', 'DICABUT'], true)) {
-                                                        return 'Status sertifikat terbit terkunci. Perubahan memerlukan izin Administrator melalui Revisi Klinis.';
-                                                    }
-                                                    return null;
-                                                })
+                                                ->helperText('Tentukan kelayakan klinis/maritim pasien. Seluruh penetapan dan revisi status tercatat di Log Audit.')
                                                 ->live(),
                                         ]),
 
@@ -250,7 +235,8 @@ class PemeriksaanMcuResource extends Resource
                     ->searchable()
                     ->sortable()
                     ->copyable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->description(fn(PemeriksaanMcu $record): ?string => $record->updated_at && $record->updated_at->diffInMinutes(now()) < 15 ? 'Baru Diperbarui (' . $record->updated_at->diffForHumans() . ')' : null),
 
                 TextColumn::make('pasien.nama')
                     ->label('Pasien')
@@ -382,7 +368,9 @@ class PemeriksaanMcuResource extends Resource
                         $user = \Illuminate\Support\Facades\Auth::user();
                         return $user !== null && $user->apakahAdministrator();
                     }),
-            ]);
+            ])
+            ->defaultSort('updated_at', 'desc')
+            ->poll('15s');
     }
 
     public static function getPages(): array

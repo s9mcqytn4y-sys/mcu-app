@@ -185,4 +185,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     {
         $this->notify(new \App\Notifications\ResetPasswordNotification($token));
     }
+
+    /**
+     * Memeriksa apakah pengguna sedang online (tercatat aktif dalam 5 menit terakhir via Cache).
+     */
+    public function apakahOnline(): bool
+    {
+        return \Illuminate\Support\Facades\Cache::has('user-online-' . $this->id);
+    }
 }
+

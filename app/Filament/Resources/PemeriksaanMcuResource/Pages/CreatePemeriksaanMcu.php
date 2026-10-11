@@ -14,9 +14,17 @@ class CreatePemeriksaanMcu extends CreateRecord
 {
     protected static string $resource = PemeriksaanMcuResource::class;
 
-    protected function getCreatedNotificationTitle(): ?string
+    protected function getCreatedNotification(): ?\Filament\Notifications\Notification
     {
-        return 'Data pemeriksaan MCU berhasil dibuat';
+        return \Filament\Notifications\Notification::make()
+            ->success()
+            ->title('Sertifikat MCU Berhasil Diterbitkan')
+            ->body('Sertifikat ' . $this->record->nomor_mcu . ' untuk pasien ' . ($this->record->pasien?->nama ?? 'Pasien') . ' telah tersimpan dan siap diverifikasi.');
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return static::getResource()::getUrl('index');
     }
 
     protected function getCreateFormAction(): \Filament\Actions\Action

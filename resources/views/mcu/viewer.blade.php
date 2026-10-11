@@ -25,6 +25,26 @@
     <meta property="twitter:description" content="Portal Verifikasi Resmi Sertifikat Medical Check-Up Klinik Indosehat 2003.">
     <meta property="twitter:image" content="{{ asset('images/logo/logo-klinik-indosehat-2003.png') }}">
 
+    <!-- Canonical & JSON-LD Structured Data (MedicalClinic) -->
+    <link rel="canonical" href="{{ url()->current() }}">
+    <script type="application/ld+json">
+    {!! json_encode([
+      '@context' => 'https://schema.org',
+      '@type' => 'MedicalClinic',
+      'name' => 'Klinik Indosehat 2003',
+      'alternateName' => 'Indosehat 2003 Medical Center',
+      'url' => url('/'),
+      'logo' => asset('images/logo/logo-indosehat-horizontal.png'),
+      'medicalSpecialty' => 'OccupationalMedicine',
+      'description' => 'Layanan pemeriksaan kesehatan kerja dan sertifikasi Medical Check-Up (MCU) pelaut dan industri.',
+      'contactPoint' => [
+        '@type' => 'ContactPoint',
+        'contactType' => 'layanan pelanggan',
+        'availableLanguage' => ['id', 'en'],
+      ],
+    ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
+
     <!-- Favicon & Icons Otentik -->
     <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">

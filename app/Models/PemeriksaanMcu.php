@@ -15,10 +15,61 @@ class PemeriksaanMcu extends Model
     use HasFactory;
 
     /**
-     * Booted model hooks untuk mencatat audit penghapusan data pemeriksaan MCU.
+     * Booted model hooks untuk mencatat audit pembuatan, pembaruan, dan penghapusan data pemeriksaan MCU.
      */
     protected static function booted(): void
     {
+        static::created(function (PemeriksaanMcu $mcu): void {
+            LogAudit::catat(
+                tindakan: 'buat_mcu',
+                model: $mcu,
+                rincian: [
+                    'nomor_mcu' => $mcu->nomor_mcu,
+                    'pasien_id' => $mcu->pasien_id,
+                    'nama_perusahaan' => $mcu->nama_perusahaan,
+                    'status_kelayakan' => $mcu->status_kelayakan,
+                    'tanggal_periksa' => $mcu->tanggal_periksa?->format('Y-m-d'),
+                ]
+            );
+        });
+
+        static::updated(function (PemeriksaanMcu $mcu): void {
+            $perubahan = [];
+            $kolomDipantau = [
+                'status_kelayakan',
+                'nomor_mcu',
+                'nama_perusahaan',
+                'berlaku_sampai',
+                'tanggal_periksa',
+                'wilayah_operasi',
+                'departemen',
+                'jenis_kapal',
+                'catatan',
+            ];
+
+            foreach ($kolomDipantau as $kolom) {
+                if ($mcu->wasChanged($kolom)) {
+                    $lama = $mcu->getOriginal($kolom);
+                    $baru = $mcu->getAttribute($kolom);
+                    $perubahan[$kolom] = [
+                        'lama' => $lama instanceof \Carbon\CarbonInterface ? $lama->format('Y-m-d') : $lama,
+                        'baru' => $baru instanceof \Carbon\CarbonInterface ? $baru->format('Y-m-d') : $baru,
+                    ];
+                }
+            }
+
+            if (! empty($perubahan)) {
+                LogAudit::catat(
+                    tindakan: 'ubah_mcu',
+                    model: $mcu,
+                    rincian: [
+                        'nomor_mcu' => $mcu->nomor_mcu,
+                        'perubahan' => $perubahan,
+                    ]
+                );
+            }
+        });
+
         static::deleted(function (PemeriksaanMcu $mcu): void {
             LogAudit::catat(
                 tindakan: 'hapus_mcu',

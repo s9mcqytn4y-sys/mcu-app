@@ -150,6 +150,19 @@ class UserResource extends Resource
                         default => 'warning',
                     }),
 
+                TextColumn::make('status_online')
+                    ->label('Status Sesi')
+                    ->badge()
+                    ->state(fn (User $record): string => $record->apakahOnline() ? 'Online' : 'Offline')
+                    ->color(fn (string $state): string => match ($state) {
+                        'Online' => 'success',
+                        default => 'gray',
+                    })
+                    ->icon(fn (string $state): string => match ($state) {
+                        'Online' => 'heroicon-m-signal',
+                        default => 'heroicon-m-signal-slash',
+                    }),
+
                 IconColumn::make('aktif')
                     ->label('Aktif')
                     ->boolean(),
@@ -159,6 +172,7 @@ class UserResource extends Resource
                     ->dateTime('d/m/Y')
                     ->sortable(),
             ])
+            ->poll('15s')
             ->filters([
                 SelectFilter::make('peran')
                     ->label('Filter Peran')
