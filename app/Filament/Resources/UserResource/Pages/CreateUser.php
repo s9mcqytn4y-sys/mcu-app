@@ -49,7 +49,7 @@ class CreateUser extends CreateRecord
         $record = $this->record;
 
         return ! empty($record->token_undangan)
-            ? 'Pengguna baru berhasil dibuat dan undangan aktivasi telah dikirim ke ' . $record->email
+            ? 'Pengguna baru berhasil dibuat dan undangan aktivasi telah dimasukkan ke antrean pengiriman email untuk ' . $record->email
             : 'Pengguna baru berhasil ditambahkan';
     }
 }

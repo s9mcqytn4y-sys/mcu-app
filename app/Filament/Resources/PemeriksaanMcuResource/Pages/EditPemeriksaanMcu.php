@@ -7,8 +7,16 @@ namespace App\Filament\Resources\PemeriksaanMcuResource\Pages;
 use App\Filament\Resources\PemeriksaanMcuResource;
 use App\Models\LogAudit;
 use App\Models\PemeriksaanMcu;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class EditPemeriksaanMcu extends EditRecord
 {
@@ -17,6 +25,65 @@ class EditPemeriksaanMcu extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('revisi_klinis')
+                ->label('Revisi Klinis')
+                ->icon('heroicon-o-shield-exclamation')
+                ->color('warning')
+                ->visible(function (): bool {
+                    /** @var \App\Models\User|null $user */
+                    $user = Auth::user();
+
+                    return $user !== null
+                        && $user->apakahAdministrator()
+                        && in_array($this->record->status_kelayakan, ['FIT', 'UNFIT', 'DICABUT'], true);
+                })
+                ->form([
+                    Textarea::make('alasan_revisi')
+                        ->label('Alasan Revisi Klinis')
+                        ->required()
+                        ->minLength(10)
+                        ->maxLength(500)
+                        ->placeholder('Contoh: Koreksi hasil audiometri susulan dari dokter spesialis.')
+                        ->helperText('Alasan revisi dicatat secara permanen pada log audit medikolegal.'),
+
+                    Select::make('status_baru')
+                        ->label('Status Kelayakan Medis Baru')
+                        ->options([
+                            'FIT' => 'FIT',
+                            'UNFIT' => 'UNFIT',
+                            'DICABUT' => 'DICABUT',
+                            'Draf' => 'Draf',
+                        ])
+                        ->default(fn () => $this->record->status_kelayakan)
+                        ->required()
+                        ->native(false),
+                ])
+                ->action(function (array $data): void {
+                    $statusLama = $this->record->status_kelayakan;
+                    $statusBaru = $data['status_baru'];
+                    $alasan = $data['alasan_revisi'];
+
+                    $this->record->update([
+                        'status_kelayakan' => $statusBaru,
+                        'catatan' => trim(($this->record->catatan ?? '') . "\n[Revisi Klinis " . now()->format('d/m/Y H:i') . "] " . $alasan),
+                    ]);
+
+                    LogAudit::rekam(
+                        tindakan: 'revisi_klinis_mcu',
+                        tipeModel: PemeriksaanMcu::class,
+                        idModel: $this->record->id,
+                        keterangan: "Revisi klinis oleh Administrator dari {$statusLama} menjadi {$statusBaru}. Alasan: {$alasan}",
+                    );
+
+                    Notification::make()
+                        ->title('Revisi klinis berhasil diterapkan')
+                        ->body("Status kelayakan diubah menjadi {$statusBaru}.")
+                        ->success()
+                        ->send();
+
+                    $this->refreshFormData(['status_kelayakan', 'catatan']);
+                }),
+
             DeleteAction::make()
                 ->modalHeading('Konfirmasi Hapus Data MCU')
                 ->modalDescription('Apakah Anda yakin ingin menghapus data pemeriksaan MCU ini? Tindakan ini tidak dapat dibatalkan.')
@@ -24,7 +91,7 @@ class EditPemeriksaanMcu extends EditRecord
                 ->modalCancelActionLabel('Batal')
                 ->visible(function (): bool {
                     /** @var \App\Models\User|null $user */
-                    $user = \Illuminate\Support\Facades\Auth::user();
+                    $user = Auth::user();
                     return $user !== null && $user->apakahAdministrator();
                 }),
         ];
@@ -35,14 +102,24 @@ class EditPemeriksaanMcu extends EditRecord
         return 'Data pemeriksaan MCU berhasil diperbarui';
     }
 
-    protected function getSaveFormAction(): \Filament\Actions\Action
+    protected function getSaveFormAction(): Action
     {
-        return parent::getSaveFormAction()
+        $action = parent::getSaveFormAction()
             ->keyBindings(['mod+s'])
             ->label('Simpan Perubahan (Ctrl+S)');
+
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        $isPublished = in_array($this->record->status_kelayakan, ['FIT', 'UNFIT', 'DICABUT'], true);
+
+        if ($isPublished && ($user === null || ! $user->apakahAdministrator())) {
+            $action->disabled()->tooltip('Sertifikat terbit terkunci. Perubahan memerlukan prosedur Revisi Klinis oleh Administrator.');
+        }
+
+        return $action;
     }
 
-    protected function getCancelFormAction(): \Filament\Actions\Action
+    protected function getCancelFormAction(): Action
     {
         return parent::getCancelFormAction()
             ->keyBindings(['escape'])
@@ -53,31 +130,37 @@ class EditPemeriksaanMcu extends EditRecord
     {
         $this->record->loadMissing(['pasien', 'lampiranMcu']);
 
-        $data['nama_pasien'] = $this->record->pasien?->nama;
-        $data['jenis_kelamin'] = $this->record->pasien?->jenis_kelamin;
-        $data['tanggal_lahir'] = $this->record->pasien?->tanggal_lahir?->format('Y-m-d');
-        $data['no_ktp'] = $this->record->pasien?->no_ktp;
-        $data['no_paspor'] = $this->record->pasien?->no_paspor;
+        $data['pasien_id'] = $this->record->pasien_id;
+        $data['pasien_nama_display'] = $this->record->pasien?->nama;
+        $data['pasien_nik_display'] = $this->record->pasien?->no_ktp;
+        $data['pasien_jk_display'] = $this->record->pasien?->jenis_kelamin;
+        $data['pasien_tgl_lahir_display'] = $this->record->pasien?->tanggal_lahir?->format('d/m/Y');
+        $data['pasien_paspor_display'] = $this->record->pasien?->no_paspor ?? '-';
         $data['lampiran_file'] = $this->record->lampiranMcu?->first()?->path_berkas;
 
         return $data;
     }
 
-    protected function handleRecordUpdate(\Illuminate\Database\Eloquent\Model $record, array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($record, $data) {
-            if ($record->pasien) {
-                $record->pasien->update([
-                    'nama' => $data['nama_pasien'],
-                    'jenis_kelamin' => $data['jenis_kelamin'],
-                    'tanggal_lahir' => $data['tanggal_lahir'],
-                    'no_ktp' => $data['no_ktp'],
-                    'no_paspor' => $data['no_paspor'] ?? null,
-                ]);
-            }
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        $isPublished = in_array($record->status_kelayakan, ['FIT', 'UNFIT', 'DICABUT'], true);
 
+        if ($isPublished && ($user === null || ! $user->apakahAdministrator())) {
+            throw new AuthorizationException('Sertifikat yang telah terbit hanya dapat diubah oleh Administrator melalui prosedur Revisi Klinis.');
+        }
+
+        return DB::transaction(function () use ($record, $data) {
             $lampiranPath = $data['lampiran_file'] ?? null;
-            unset($data['nama_pasien'], $data['jenis_kelamin'], $data['tanggal_lahir'], $data['no_ktp'], $data['no_paspor'], $data['lampiran_file']);
+            unset(
+                $data['lampiran_file'],
+                $data['pasien_nama_display'],
+                $data['pasien_nik_display'],
+                $data['pasien_jk_display'],
+                $data['pasien_tgl_lahir_display'],
+                $data['pasien_paspor_display']
+            );
 
             if (! empty($lampiranPath)) {
                 $lampiran = $record->lampiranMcu()->first();

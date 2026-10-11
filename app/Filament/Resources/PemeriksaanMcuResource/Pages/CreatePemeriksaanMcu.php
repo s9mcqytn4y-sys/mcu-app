@@ -35,25 +35,18 @@ class CreatePemeriksaanMcu extends CreateRecord
 
     protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
     {
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
-            // Sinkronisasi data pasien (Cari berdasarkan NIK atau buat baru, perbarui jika sudah ada)
-            $pasien = \App\Models\Pasien::updateOrCreate(
-                ['no_ktp' => $data['no_ktp']],
-                [
-                    'nama' => $data['nama_pasien'],
-                    'jenis_kelamin' => $data['jenis_kelamin'],
-                    'tanggal_lahir' => $data['tanggal_lahir'],
-                    'no_paspor' => $data['no_paspor'] ?? null,
-                ]
-            );
+        $userId = \Illuminate\Support\Facades\Auth::id();
+        if ($userId === null) {
+            throw new \Illuminate\Auth\AuthenticationException('Autentikasi diperlukan. Pengguna harus login untuk menerbitkan sertifikat MCU.');
+        }
 
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($data, $userId) {
             $lampiranPath = $data['lampiran_file'] ?? null;
-            unset($data['nama_pasien'], $data['jenis_kelamin'], $data['tanggal_lahir'], $data['no_ktp'], $data['no_paspor'], $data['lampiran_file']);
+            unset($data['lampiran_file'], $data['pasien_nama_display'], $data['pasien_nik_display'], $data['pasien_jk_display'], $data['pasien_tgl_lahir_display'], $data['pasien_paspor_display']);
 
-            $data['pasien_id'] = $pasien->id;
             $data['nomor_mcu'] = app(\App\Actions\Mcu\GenerateNomorMcuAction::class)->generate();
             $data['token_verifikasi'] = (string) Str::uuid();
-            $data['dibuat_oleh'] = \Illuminate\Support\Facades\Auth::id() ?? 1;
+            $data['dibuat_oleh'] = $userId;
 
             /** @var \App\Models\PemeriksaanMcu $record */
             $record = static::getModel()::create($data);

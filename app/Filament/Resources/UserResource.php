@@ -187,7 +187,7 @@ class UserResource extends Resource
                         $record->notify(new \App\Notifications\UndanganPenggunaNotification($token));
 
                         \Filament\Notifications\Notification::make()
-                            ->title('Undangan aktivasi berhasil dikirim ke ' . $record->email)
+                            ->title('Undangan aktivasi telah dimasukkan ke antrean pengiriman email untuk ' . $record->email)
                             ->success()
                             ->send();
                     }),

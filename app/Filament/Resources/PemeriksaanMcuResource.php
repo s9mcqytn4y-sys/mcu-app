@@ -47,60 +47,95 @@ class PemeriksaanMcuResource extends Resource
                             ->columnSpan(['default' => 1, 'lg' => 8])
                             ->schema([
                                 Section::make('1. Data Sertifikat MCU')
-                                    ->description('Isi data pasien dan hasil evaluasi kelaikan medis maritim.')
+                                    ->description('Pilih pasien terdaftar atau daftarkan baru, lalu tentukan hasil evaluasi kelaikan medis maritim.')
                                     ->icon('heroicon-o-document-text')
                                     ->collapsible()
                                     ->schema([
+                                        Select::make('pasien_id')
+                                            ->label('Pilih Pasien Terdaftar')
+                                            ->relationship('pasien', 'nama')
+                                            ->searchable(['nama', 'no_ktp', 'no_paspor'])
+                                            ->getOptionLabelFromRecordUsing(fn (\App\Models\Pasien $record): string => "{$record->nama} (NIK: {$record->no_ktp})")
+                                            ->preload(false)
+                                            ->required()
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, callable $set) {
+                                                if ($state) {
+                                                    $pasien = \App\Models\Pasien::find($state);
+                                                    if ($pasien) {
+                                                        $set('pasien_nama_display', $pasien->nama);
+                                                        $set('pasien_nik_display', $pasien->no_ktp);
+                                                        $set('pasien_jk_display', $pasien->jenis_kelamin);
+                                                        $set('pasien_tgl_lahir_display', $pasien->tanggal_lahir?->format('d/m/Y'));
+                                                        $set('pasien_paspor_display', $pasien->no_paspor ?? '-');
+                                                    }
+                                                }
+                                            })
+                                            ->createOptionForm([
+                                                TextInput::make('nama')
+                                                    ->label('Nama Lengkap')
+                                                    ->required()
+                                                    ->maxLength(255)
+                                                    ->placeholder('Contoh: Budi Santoso')
+                                                    ->autocomplete('off'),
+                                                Select::make('jenis_kelamin')
+                                                    ->label('Jenis Kelamin')
+                                                    ->options([
+                                                        'Laki-laki' => 'Laki-laki',
+                                                        'Perempuan' => 'Perempuan',
+                                                    ])
+                                                    ->required()
+                                                    ->native(false),
+                                                DatePicker::make('tanggal_lahir')
+                                                    ->label('Tanggal Lahir')
+                                                    ->required()
+                                                    ->maxDate(now())
+                                                    ->displayFormat('d/m/Y')
+                                                    ->native(false),
+                                                TextInput::make('no_ktp')
+                                                    ->label('Nomor KTP (NIK)')
+                                                    ->required()
+                                                    ->length(16)
+                                                    ->regex('/^[0-9]{16}$/')
+                                                    ->unique('pasien', 'no_ktp')
+                                                    ->validationMessages([
+                                                        'regex' => 'Nomor KTP wajib tepat 16 digit angka.',
+                                                        'unique' => 'NIK ini sudah terdaftar untuk pasien lain.',
+                                                    ])
+                                                    ->placeholder('16 digit NIK')
+                                                    ->autocomplete('off')
+                                                    ->extraInputAttributes(['inputmode' => 'numeric', 'pattern' => '[0-9]*']),
+                                                TextInput::make('no_paspor')
+                                                    ->label('Nomor Paspor (Opsional)')
+                                                    ->maxLength(30)
+                                                    ->placeholder('Nomor paspor aktif')
+                                                    ->autocomplete('off'),
+                                            ])
+                                            ->createOptionAction(fn (\Filament\Forms\Components\Actions\Action $action) => $action
+                                                ->modalHeading('Daftarkan Rekam Pasien Baru')
+                                                ->modalSubmitActionLabel('Simpan Pasien')
+                                            )
+                                            ->helperText('Cari berdasarkan nama atau NIK. Jika pasien belum terdaftar, klik ikon (+) untuk menambahkan pasien baru tanpa menimpa data orang lain.'),
+
+                                        // Ringkasan Identitas Pasien (Read-Only)
+                                        Grid::make(['default' => 1, 'sm' => 2, 'md' => 4])
+                                            ->visible(fn (Get $get, ?PemeriksaanMcu $record): bool => (bool) ($get('pasien_id') ?: $record?->pasien_id))
+                                            ->schema([
+                                                Placeholder::make('info_nik')
+                                                    ->label('NIK Terdaftar')
+                                                    ->content(fn (Get $get, ?PemeriksaanMcu $record): string => (string) ($get('pasien_nik_display') ?: ($record?->pasien?->no_ktp ?? '-'))),
+                                                Placeholder::make('info_jk')
+                                                    ->label('Jenis Kelamin')
+                                                    ->content(fn (Get $get, ?PemeriksaanMcu $record): string => (string) ($get('pasien_jk_display') ?: ($record?->pasien?->jenis_kelamin ?? '-'))),
+                                                Placeholder::make('info_tgl_lahir')
+                                                    ->label('Tanggal Lahir')
+                                                    ->content(fn (Get $get, ?PemeriksaanMcu $record): string => (string) ($get('pasien_tgl_lahir_display') ?: ($record?->pasien?->tanggal_lahir?->format('d/m/Y') ?? '-'))),
+                                                Placeholder::make('info_paspor')
+                                                    ->label('Nomor Paspor')
+                                                    ->content(fn (Get $get, ?PemeriksaanMcu $record): string => (string) ($get('pasien_paspor_display') ?: ($record?->pasien?->no_paspor ?? '-'))),
+                                            ]),
+
                                         Grid::make(['default' => 1, 'md' => 2])->schema([
-                                            TextInput::make('nama_pasien')
-                                                ->label('Nama Lengkap')
-                                                ->required()
-                                                ->maxLength(255)
-                                                ->placeholder('Contoh: Aziz Rahman')
-                                                ->autofocus()
-                                                ->autocomplete('off')
-                                                ->live(debounce: 1000),
-
-                                            Select::make('jenis_kelamin')
-                                                ->label('Jenis Kelamin')
-                                                ->options([
-                                                    'Laki-laki' => 'Laki-laki',
-                                                    'Perempuan' => 'Perempuan',
-                                                ])
-                                                ->required()
-                                                ->native(false),
-                                        ]),
-
-                                        Grid::make(['default' => 1, 'md' => 2])->schema([
-                                            DatePicker::make('tanggal_lahir')
-                                                ->label('Tanggal Lahir')
-                                                ->required()
-                                                ->maxDate(now())
-                                                ->displayFormat('d/m/Y')
-                                                ->closeOnDateSelection()
-                                                ->native(false),
-
-                                            TextInput::make('no_ktp')
-                                                ->label('Nomor KTP (NIK)')
-                                                ->required()
-                                                ->length(16)
-                                                ->regex('/^[0-9]{16}$/')
-                                                ->validationMessages([
-                                                    'regex' => 'Nomor KTP wajib tepat 16 digit angka.',
-                                                ])
-                                                ->placeholder('16 digit NIK')
-                                                ->autocomplete('off')
-                                                ->extraInputAttributes(['inputmode' => 'numeric', 'pattern' => '[0-9]*'])
-                                                ->helperText('Jika NIK sudah terdaftar, profil pasien diperbarui otomatis.'),
-                                        ]),
-
-                                        Grid::make(['default' => 1, 'md' => 2])->schema([
-                                            TextInput::make('no_paspor')
-                                                ->label('Nomor Paspor (Opsional)')
-                                                ->maxLength(30)
-                                                ->autocomplete('off')
-                                                ->placeholder('Nomor paspor aktif'),
-
                                             TextInput::make('nama_perusahaan')
                                                 ->label('Nama Perusahaan / Kapal')
                                                 ->required()
@@ -108,6 +143,35 @@ class PemeriksaanMcuResource extends Resource
                                                 ->autocomplete('off')
                                                 ->placeholder('PT Pelayaran / Nama Kapal')
                                                 ->live(debounce: 1000),
+
+                                            Select::make('status_kelayakan')
+                                                ->label('Status Kelayakan Medis')
+                                                ->options([
+                                                    'FIT' => 'FIT',
+                                                    'UNFIT' => 'UNFIT',
+                                                    'Draf' => 'Draf',
+                                                    'DICABUT' => 'Dicabut',
+                                                ])
+                                                ->default('FIT')
+                                                ->required()
+                                                ->native(false)
+                                                ->disabled(function (?PemeriksaanMcu $record): bool {
+                                                    if ($record === null) {
+                                                        return false;
+                                                    }
+                                                    /** @var \App\Models\User|null $user */
+                                                    $user = \Illuminate\Support\Facades\Auth::user();
+                                                    $isPublished = in_array($record->status_kelayakan, ['FIT', 'UNFIT', 'DICABUT'], true);
+
+                                                    return $isPublished && ($user === null || ! $user->apakahAdministrator());
+                                                })
+                                                ->helperText(function (?PemeriksaanMcu $record): ?string {
+                                                    if ($record && in_array($record->status_kelayakan, ['FIT', 'UNFIT', 'DICABUT'], true)) {
+                                                        return 'Status sertifikat terbit terkunci. Perubahan memerlukan izin Administrator melalui Revisi Klinis.';
+                                                    }
+                                                    return null;
+                                                })
+                                                ->live(),
                                         ]),
 
                                         Grid::make(['default' => 1, 'md' => 2])->schema([
@@ -127,19 +191,6 @@ class PemeriksaanMcuResource extends Resource
                                                 ->closeOnDateSelection()
                                                 ->native(false),
                                         ]),
-
-                                        Select::make('status_kelayakan')
-                                            ->label('Status Kelayakan Medis')
-                                            ->options([
-                                                'FIT' => 'FIT',
-                                                'UNFIT' => 'UNFIT',
-                                                'Draf' => 'Draf',
-                                                'DICABUT' => 'Dicabut',
-                                            ])
-                                            ->default('FIT')
-                                            ->required()
-                                            ->native(false)
-                                            ->live(),
                                     ]),
 
                                 Section::make('2. Lampiran File (Opsional)')
@@ -173,7 +224,11 @@ class PemeriksaanMcuResource extends Resource
                                         \Filament\Forms\Components\View::make('filament.components.mcu-live-preview')
                                             ->viewData(fn(Get $get, ?PemeriksaanMcu $record): array => [
                                                 'record' => $record,
-                                                'nama' => (string) ($get('nama_pasien') ?: ($record?->pasien?->nama ?? '-')),
+                                                'nama' => (string) (
+                                                    $get('pasien_nama_display')
+                                                    ?: ($get('pasien_id') ? \App\Models\Pasien::find($get('pasien_id'))?->nama : null)
+                                                    ?: ($record?->pasien?->nama ?? '-')
+                                                ),
                                                 'perusahaan' => (string) ($get('nama_perusahaan') ?: ($record?->nama_perusahaan ?? '-')),
                                                 'status' => (string) ($get('status_kelayakan') ?: ($record?->status_kelayakan ?? 'DRAFT')),
                                                 'verifyUrl' => $record?->token_verifikasi

@@ -123,4 +123,8 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'version' => env('APP_VERSION', '1.0.0'),
+
+    'health_check_token' => env('HEALTH_CHECK_TOKEN', 'mcu-indosehat-secret-2026'),
+
 ];

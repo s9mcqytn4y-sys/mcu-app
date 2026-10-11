@@ -11,3 +11,7 @@ Route::middleware(\App\Http\Middleware\PreventSensitiveCaching::class)->group(fu
     Route::get('/v/{uuid}/file/{index}/download', [McuViewerController::class, 'downloadFile'])->name('mcu.file.download');
 });
 
+Route::get('/api/health/version', [\App\Http\Controllers\HealthCheckController::class, 'version'])
+    ->name('api.health.version');
+
+

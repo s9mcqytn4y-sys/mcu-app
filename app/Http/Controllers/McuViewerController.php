@@ -23,7 +23,7 @@ class McuViewerController extends Controller
             ->where('token_verifikasi', $uuid)
             ->first();
 
-        if (! $pemeriksaan) {
+        if (! $pemeriksaan || $pemeriksaan->status_kelayakan === 'DRAF') {
             return response()->view('errors.invalid-qr', [], 404);
         }
 

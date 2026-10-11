@@ -1,4 +1,22 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # 1. Proteksi Berkas Sensitif (Zero Trust & Information Disclosure Defense)
+    RewriteRule ^(\.env|\.git|composer\.(json|lock)|package\.(json|lock)|phpunit\.xml|README\.md|storage\/logs\/) - [F,L,NC]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|tests|vendor)\b - [F,L,NC]
+
+    # 2. Reroute Seluruh Trafik ke Direktori public/
+    RewriteCond %{REQUEST_URI} !^/public/
     RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# 3. Disable Directory Browsing
+Options -Indexes
+
+# 4. Security Headers (LiteSpeed / Apache)
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
 </IfModule>
