@@ -42,9 +42,9 @@ class PemeriksaanMcuResource extends Resource
             ->schema([
                 Grid::make(['default' => 1, 'lg' => 12])
                     ->schema([
-                        // Kolom Kiri (8 Kolom): Section 1 (Data MCU) & Section 2 (Lampiran)
+                        // Kolom Kiri (7 Kolom): Section 1 (Data MCU) & Section 2 (Lampiran)
                         Grid::make(1)
-                            ->columnSpan(['default' => 1, 'lg' => 8])
+                            ->columnSpan(['default' => 1, 'lg' => 7, 'xl' => 7])
                             ->schema([
                                 Section::make('1. Data Sertifikat MCU')
                                     ->description('Pilih pasien terdaftar atau daftarkan baru, lalu tentukan hasil evaluasi kelaikan medis maritim.')
@@ -212,9 +212,9 @@ class PemeriksaanMcuResource extends Resource
                                     ]),
                             ]),
 
-                        // Kolom Kanan (4 Kolom): Section 3 (Pratinjau Langsung & QR Code) - Sticky di Desktop
+                        // Kolom Kanan (5 Kolom): Section 3 (Pratinjau Langsung & QR Code) - Sticky di Desktop
                         Grid::make(1)
-                            ->columnSpan(['default' => 1, 'lg' => 4])
+                            ->columnSpan(['default' => 1, 'lg' => 5, 'xl' => 5])
                             ->schema([
                                 Section::make('3. Pratinjau Sertifikat & QR')
                                     ->description('Kode QR real-time diterbitkan resmi saat sertifikat disimpan.')

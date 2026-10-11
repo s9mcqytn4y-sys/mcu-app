@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\LogAudit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PemeriksaanMcu extends Model
 {
     use HasFactory;
+
+    /**
+     * Booted model hooks untuk mencatat audit penghapusan data pemeriksaan MCU.
+     */
+    protected static function booted(): void
+    {
+        static::deleted(function (PemeriksaanMcu $mcu): void {
+            LogAudit::catat(
+                tindakan: 'hapus_mcu',
+                model: $mcu,
+                rincian: [
+                    'nomor_mcu' => $mcu->nomor_mcu,
+                    'nama_perusahaan' => $mcu->nama_perusahaan,
+                    'status_kelayakan' => $mcu->status_kelayakan,
+                ]
+            );
+        });
+    }
 
     /**
      * Nama tabel database terkait.

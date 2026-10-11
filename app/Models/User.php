@@ -64,10 +64,24 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     }
 
     /**
-     * Booted model hooks untuk mencatat perubahan wewenang dan status aktif ke log audit.
+     * Booted model hooks untuk mencatat perubahan pengguna ke log audit.
      */
     protected static function booted(): void
     {
+        static::created(function (User $user): void {
+            LogAudit::catat(
+                tindakan: 'buat_pengguna',
+                model: $user,
+                rincian: [
+                    'username' => $user->username,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'peran' => $user->peran,
+                    'aktif' => (bool) $user->aktif,
+                ]
+            );
+        });
+
         static::updated(function (User $user): void {
             $perubahan = [];
             if ($user->wasChanged('peran')) {
@@ -92,6 +106,19 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
                     ]
                 );
             }
+        });
+
+        static::deleted(function (User $user): void {
+            LogAudit::catat(
+                tindakan: 'hapus_pengguna',
+                model: $user,
+                rincian: [
+                    'username' => $user->username,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'peran' => $user->peran,
+                ]
+            );
         });
     }
 

@@ -32,3 +32,64 @@ input:-webkit-autofill:active {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
 }
+
+/* Sidebar navigation styling - Brand Klinik Indosehat 2003 */
+.fi-sidebar-item a,
+.fi-sidebar-item button {
+    transition: background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.15s ease-out;
+    border-radius: 0.5rem;
+}
+
+.fi-sidebar-item:hover a:not(.fi-sidebar-item-active > a),
+.fi-sidebar-item:hover button:not(.fi-sidebar-item-active > button) {
+    transform: translateX(2px);
+}
+
+.fi-sidebar-item .fi-sidebar-item-icon {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease-in-out;
+}
+
+.fi-sidebar-item-active > a,
+.fi-sidebar-item-active > button {
+    background-color: var(--color-brand-primary) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    box-shadow: 0 2px 8px -1px rgba(197, 34, 66, 0.35);
+}
+
+.fi-sidebar-item-active > a .fi-sidebar-item-icon,
+.fi-sidebar-item-active > button .fi-sidebar-item-icon {
+    color: #ffffff !important;
+}
+
+.fi-sidebar-item-active > a .fi-sidebar-item-label,
+.fi-sidebar-item-active > button .fi-sidebar-item-label {
+    color: #ffffff !important;
+}
+
+/* Topbar subtle elevation & backdrop blur */
+.fi-topbar {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.dark .fi-topbar {
+    border-bottom: 1px solid rgba(30, 41, 59, 0.7);
+}
+
+/* Accessible focus ring for keyboard navigation */
+:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+}
+
+/* Respect user accessibility motion preference */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+

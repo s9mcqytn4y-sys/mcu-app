@@ -24,10 +24,7 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $resetUrl = route('filament.admin.auth.password-reset.reset', [
-            'token' => $this->token,
-            'email' => $notifiable->getEmailForPasswordReset(),
-        ]);
+        $resetUrl = \Filament\Facades\Filament::getResetPasswordUrl($this->token, $notifiable);
 
         return (new MailMessage)
             ->subject('Permintaan Pemulihan Kata Sandi - Klinik Indosehat 2003')

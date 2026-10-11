@@ -180,7 +180,7 @@ class UserResource extends Resource
                         ->label('Kirim Surel Undangan')
                         ->icon('heroicon-o-paper-airplane')
                     )
-                    ->action(function (User $record): void {
+                    ->action(function (User $record, \Filament\Tables\Actions\Action $action): void {
                         try {
                             $token = \Illuminate\Support\Facades\Password::broker()->createToken($record);
                             $record->forceFill([
@@ -188,15 +188,12 @@ class UserResource extends Resource
                                 'undangan_dikirim_pada' => now(),
                             ])->saveQuietly();
 
-                            $tautanAktivasi = route('filament.admin.auth.password-reset.reset', [
-                                'token' => $token,
-                                'email' => $record->getEmailForPasswordReset(),
-                            ]);
+                            $tautanAktivasi = \Filament\Facades\Filament::getResetPasswordUrl($token, $record);
 
                             $record->notify(new \App\Notifications\UndanganPenggunaNotification($token));
 
                             \App\Models\LogAudit::catat(
-                                tindakan: 'KIRIM_UNDANGAN_PENGGUNA',
+                                tindakan: 'kirim_undangan_pengguna',
                                 model: $record,
                                 rincian: [
                                     'email' => $record->email,
@@ -222,10 +219,7 @@ class UserResource extends Resource
                             ]);
 
                             $token = $token ?? \Illuminate\Support\Facades\Password::broker()->createToken($record);
-                            $tautanAktivasi = route('filament.admin.auth.password-reset.reset', [
-                                'token' => $token,
-                                'email' => $record->getEmailForPasswordReset(),
-                            ]);
+                            $tautanAktivasi = \Filament\Facades\Filament::getResetPasswordUrl($token, $record);
 
                             \Filament\Notifications\Notification::make()
                                 ->title('Pengiriman Surel Terkendala')
@@ -246,20 +240,20 @@ class UserResource extends Resource
                     ->icon('heroicon-o-link')
                     ->color('info')
                     ->visible(fn (User $record): bool => ! $record->hasVerifiedEmail())
-                    ->action(function (User $record): void {
+                    ->action(function (User $record, \Filament\Tables\Actions\Action $action): void {
                         $token = \Illuminate\Support\Facades\Password::broker()->createToken($record);
                         $record->forceFill([
                             'token_undangan' => \Illuminate\Support\Str::random(60),
                             'undangan_dikirim_pada' => now(),
                         ])->saveQuietly();
 
-                        $tautanAktivasi = route('filament.admin.auth.password-reset.reset', [
-                            'token' => $token,
-                            'email' => $record->getEmailForPasswordReset(),
-                        ]);
+                        $tautanAktivasi = \Filament\Facades\Filament::getResetPasswordUrl($token, $record);
+
+                        // Salin langsung ke clipboard pengguna di peramban
+                        $action->getLivewire()->js('navigator.clipboard.writeText(' . json_encode($tautanAktivasi) . ')');
 
                         \App\Models\LogAudit::catat(
-                            tindakan: 'BUAT_TAUTAN_AKTIVASI_PENGGUNA',
+                            tindakan: 'salin_tautan_aktivasi',
                             model: $record,
                             rincian: [
                                 'email' => $record->email,
@@ -268,10 +262,9 @@ class UserResource extends Resource
                         );
 
                         \Filament\Notifications\Notification::make()
-                            ->title('Tautan Aktivasi Siap')
-                            ->body('Tautan aktivasi untuk ' . $record->name . ' (' . $record->email . ') siap dibagikan ke staf.')
-                            ->info()
-                            ->persistent()
+                            ->title('Tautan Aktivasi Telah Disalin')
+                            ->body('Tautan aktivasi untuk ' . $record->name . ' (' . $record->email . ') otomatis tersalin ke papan klip.')
+                            ->success()
                             ->actions([
                                 \Filament\Notifications\Actions\Action::make('buka_tautan')
                                     ->label('Buka Tautan Aktivasi')

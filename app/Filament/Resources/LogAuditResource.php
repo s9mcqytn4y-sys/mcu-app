@@ -12,9 +12,9 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\Grid as InfolistGrid;
-use Filament\Infolists\Components\KeyValueEntry;
 use Filament\Infolists\Components\Section as InfolistSection;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\ViewEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\ViewAction;
@@ -73,11 +73,12 @@ class LogAuditResource extends Resource
                                 TextEntry::make('tindakan')
                                     ->label('Tindakan Operasi')
                                     ->badge()
-                                    ->color(fn (string $state): string => match ($state) {
-                                        'pemeriksaan_mcu_dibuat' => 'success',
-                                        'pemeriksaan_mcu_diperbarui' => 'warning',
-                                        'AKSES_VERIFIKASI_MCU', 'portal_mcu_diverifikasi' => 'info',
-                                        'lampiran_mcu_diunduh' => 'primary',
+                                    ->color(fn (string $state): string => match (true) {
+                                        str_starts_with($state, 'buat_') => 'success',
+                                        str_starts_with($state, 'ubah_') || str_starts_with($state, 'revisi_') || str_contains($state, 'MODIFIKASI_') => 'warning',
+                                        str_starts_with($state, 'hapus_') => 'danger',
+                                        str_contains($state, 'AKSES_') || str_contains($state, 'verifikasi') || str_contains($state, 'portal_') => 'info',
+                                        str_starts_with($state, 'kirim_') || str_starts_with($state, 'salin_') || str_contains($state, 'unduh') => 'primary',
                                         default => 'gray',
                                     }),
                             ]),
@@ -106,8 +107,9 @@ class LogAuditResource extends Resource
                             ->columnSpanFull()
                             ->copyable(),
 
-                        KeyValueEntry::make('rincian')
-                            ->label('Metadata Rincian')
+                        ViewEntry::make('rincian')
+                            ->label('Metadata Rincian & Diff Nilai')
+                            ->view('filament.components.log-audit-rincian')
                             ->columnSpanFull(),
                     ]),
             ]);
@@ -173,12 +175,31 @@ class LogAuditResource extends Resource
                     ->label('Tindakan')
                     ->searchable()
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'pemeriksaan_mcu_dibuat' => 'success',
-                        'pemeriksaan_mcu_diperbarui' => 'warning',
-                        'AKSES_VERIFIKASI_MCU', 'portal_mcu_diverifikasi' => 'info',
-                        'lampiran_mcu_diunduh' => 'primary',
+                    ->color(fn (string $state): string => match (true) {
+                        str_starts_with($state, 'buat_') => 'success',
+                        str_starts_with($state, 'ubah_') || str_starts_with($state, 'revisi_') || str_contains($state, 'MODIFIKASI_') => 'warning',
+                        str_starts_with($state, 'hapus_') => 'danger',
+                        str_contains($state, 'AKSES_') || str_contains($state, 'verifikasi') || str_contains($state, 'portal_') => 'info',
+                        str_starts_with($state, 'kirim_') || str_starts_with($state, 'salin_') || str_contains($state, 'unduh') => 'primary',
                         default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'buat_mcu' => 'Buat MCU',
+                        'ubah_mcu' => 'Ubah MCU',
+                        'hapus_mcu' => 'Hapus MCU',
+                        'revisi_klinis_mcu' => 'Revisi Klinis MCU',
+                        'buat_pasien' => 'Buat Pasien',
+                        'ubah_pasien' => 'Ubah Pasien',
+                        'hapus_pasien' => 'Hapus Pasien',
+                        'buat_pengguna' => 'Buat Pengguna',
+                        'hapus_pengguna' => 'Hapus Pengguna',
+                        'MODIFIKASI_AKSES_PENGGUNA' => 'Modifikasi Akses Pengguna',
+                        'kirim_undangan_pengguna' => 'Kirim Undangan',
+                        'salin_tautan_aktivasi' => 'Salin Tautan Aktivasi',
+                        'AKSES_VERIFIKASI_MCU' => 'Akses Verifikasi MCU',
+                        'unduh_berkas_sertifikat' => 'Unduh Sertifikat',
+                        'import_arsip_legacy' => 'Impor Arsip Legacy',
+                        default => $state,
                     }),
 
                 TextColumn::make('alamat_ip')
@@ -191,6 +212,36 @@ class LogAuditResource extends Resource
                     ->formatStateUsing(fn (?string $state): string => class_basename((string) $state)),
             ])
             ->defaultSort('created_at', 'desc')
+            ->filters([
+                SelectFilter::make('tindakan')
+                    ->label('Filter Tindakan')
+                    ->options([
+                        'buat_mcu' => 'Buat MCU',
+                        'ubah_mcu' => 'Ubah MCU',
+                        'revisi_klinis_mcu' => 'Revisi Klinis MCU',
+                        'hapus_mcu' => 'Hapus MCU',
+                        'buat_pasien' => 'Buat Pasien',
+                        'ubah_pasien' => 'Ubah Pasien',
+                        'hapus_pasien' => 'Hapus Pasien',
+                        'buat_pengguna' => 'Buat Pengguna',
+                        'MODIFIKASI_AKSES_PENGGUNA' => 'Modifikasi Akses Pengguna',
+                        'kirim_undangan_pengguna' => 'Kirim Undangan',
+                        'salin_tautan_aktivasi' => 'Salin Tautan Aktivasi',
+                        'hapus_pengguna' => 'Hapus Pengguna',
+                        'AKSES_VERIFIKASI_MCU' => 'Akses Verifikasi MCU',
+                        'unduh_berkas_sertifikat' => 'Unduh Sertifikat',
+                        'import_arsip_legacy' => 'Impor Arsip Legacy',
+                    ]),
+
+                SelectFilter::make('tipe_model')
+                    ->label('Filter Entitas')
+                    ->options([
+                        'App\Models\PemeriksaanMcu' => 'Pemeriksaan MCU',
+                        'App\Models\Pasien' => 'Pasien',
+                        'App\Models\User' => 'Pengguna (User)',
+                        'App\Models\LampiranMcu' => 'Lampiran MCU',
+                    ]),
+            ])
             ->actions([
                 ViewAction::make(),
             ])

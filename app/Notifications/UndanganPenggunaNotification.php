@@ -24,10 +24,7 @@ class UndanganPenggunaNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $resetUrl = route('filament.admin.auth.password-reset.reset', [
-            'token' => $this->token,
-            'email' => $notifiable->getEmailForPasswordReset(),
-        ]);
+        $resetUrl = \Filament\Facades\Filament::getResetPasswordUrl($this->token, $notifiable);
 
         $peranLabel = match ($notifiable->peran ?? 'staf') {
             'administrator' => 'Administrator Sistem (Akses Penuh)',
