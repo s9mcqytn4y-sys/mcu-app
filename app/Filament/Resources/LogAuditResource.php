@@ -40,6 +40,11 @@ class LogAuditResource extends Resource
         return $user !== null && $user->apakahAdministrator();
     }
 
+    public static function canViewAny(): bool
+    {
+        return static::canAccess();
+    }
+
     public static function canCreate(): bool
     {
         return false;

@@ -118,7 +118,8 @@ class LogAudit extends Model
         ?int $idPengguna = null,
         ?string $aksi = null,
         ?Model $model = null,
-        ?string $keterangan = null
+        ?string $keterangan = null,
+        ?string $alamatIp = null
     ): self {
         $tindakanFinal = $aksi ?? $tindakan;
 
@@ -136,7 +137,7 @@ class LogAudit extends Model
             'tindakan' => $tindakanFinal,
             'tipe_model' => $tipeModelFinal,
             'id_model' => $idModelFinal,
-            'alamat_ip' => Request::ip() ?? '127.0.0.1',
+            'alamat_ip' => $alamatIp ?? (Request::ip() ?? '127.0.0.1'),
             'agen_pengguna' => substr(Request::userAgent() ?? 'CLI/System', 0, 500),
             'rincian' => !empty($rincianPayload) ? $rincianPayload : null,
         ]);
@@ -152,7 +153,8 @@ class LogAudit extends Model
         Model|string|null $model = null,
         ?int $idModel = null,
         array $rincian = [],
-        ?int $idPengguna = null
+        ?int $idPengguna = null,
+        ?string $alamatIp = null
     ): self {
         return self::rekam(
             tindakan: $tindakan,
@@ -160,7 +162,8 @@ class LogAudit extends Model
             idModel: $idModel,
             rincian: $rincian,
             idPengguna: $idPengguna,
-            model: $model instanceof Model ? $model : null
+            model: $model instanceof Model ? $model : null,
+            alamatIp: $alamatIp
         );
     }
 }

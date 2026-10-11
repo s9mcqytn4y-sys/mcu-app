@@ -1,38 +1,52 @@
 <x-filament-panels::page>
     <div class="space-y-6">
         {{-- Banner Operasional & Quick Action Utama --}}
-        <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <x-filament::section>
             <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                     <div class="inline-flex items-center gap-2 rounded-md bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
                         <span class="inline-block size-2 rounded-full bg-rose-600"></span>
-                        Ringkasan Pemeriksaan
+                        Ringkasan Operasional
                     </div>
                     <h2 class="mt-2 text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                        Kelola pemeriksaan dan sertifikat MCU dari satu tempat.
+                        Pusat Kendali Pemeriksaan & Sertifikasi MCU
                     </h2>
                     <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                        Kelola data pasien pelaut/tenaga kerja, validasi kelayakan medis maritim, dan terbitkan sertifikat ber-QR terverifikasi.
+                        Kelola data pasien, validasi kelayakan medis maritim, dan terbitkan sertifikat ber-QR terverifikasi secara resmi.
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
-                    <a
+                    <x-filament::button
+                        tag="a"
                         href="{{ $this->getUrlPemeriksaanBaru() }}"
-                        class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#C52242] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#a61c36] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#C52242]"
+                        icon="heroicon-m-plus-circle"
+                        color="danger"
+                        size="lg"
                     >
-                        <x-heroicon-m-plus-circle class="size-5" />
-                        Pemeriksaan Baru
-                    </a>
-                    <a
+                        Input MCU Baru
+                    </x-filament::button>
+                    <x-filament::button
+                        tag="a"
+                        href="{{ $this->getUrlRegistrasiPasien() }}"
+                        icon="heroicon-m-user-plus"
+                        color="gray"
+                        size="lg"
+                    >
+                        Registrasi Pasien
+                    </x-filament::button>
+                    <x-filament::button
+                        tag="a"
                         href="{{ $this->getUrlDaftarPasien() }}"
-                        class="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                        icon="heroicon-m-magnifying-glass"
+                        color="gray"
+                        outlined="true"
+                        size="lg"
                     >
-                        <x-heroicon-m-users class="size-5 text-slate-500 dark:text-slate-400" />
                         Cari Pasien
-                    </a>
+                    </x-filament::button>
                 </div>
             </div>
-        </div>
+        </x-filament::section>
 
         {{-- Grid Metrik Klinis (KPI Cards) --}}
         @php
@@ -42,12 +56,12 @@
             $totalMcu = $this->getTotalMcuCount();
         @endphp
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <x-filament::grid default="1" sm="2" lg="4" class="gap-4">
             {{-- Kartu 1: Pemeriksaan Hari Ini --}}
-            <div class="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+            <x-filament::section class="transition-all duration-200 hover:-translate-y-0.5">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pemeriksaan Hari Ini</span>
-                    <span class="rounded-full bg-rose-50 p-2 text-rose-700 transition-colors group-hover:bg-rose-100 dark:bg-rose-950/60 dark:text-rose-300 dark:group-hover:bg-rose-900/60">
+                    <span class="rounded-full bg-rose-50 p-2 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
                         <x-heroicon-o-calendar-days class="size-5" />
                     </span>
                 </div>
@@ -59,13 +73,13 @@
                         Pemeriksaan diterbitkan hari ini ({{ now()->translatedFormat('d M Y') }})
                     </div>
                 </div>
-            </div>
+            </x-filament::section>
 
-            {{-- Kartu 2: Hasil Pemeriksaan --}}
-            <div class="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+            {{-- Kartu 2: Rasio Laik Kerja --}}
+            <x-filament::section class="transition-all duration-200 hover:-translate-y-0.5">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Hasil Pemeriksaan</span>
-                    <span class="rounded-full bg-emerald-50 p-2 text-emerald-700 transition-colors group-hover:bg-emerald-100 dark:bg-emerald-950/60 dark:text-emerald-300 dark:group-hover:bg-emerald-900/60">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Kelayakan Medis</span>
+                    <span class="rounded-full bg-emerald-50 p-2 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                         <x-heroicon-o-check-badge class="size-5" />
                     </span>
                 </div>
@@ -79,16 +93,16 @@
                         </span>
                     </div>
                     <div class="mt-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                        <span>UNFIT: <strong>{{ $statKelayakan['unfit'] }}</strong> pasien</span>
+                        <span>UNFIT: <strong class="font-bold text-rose-600 dark:text-rose-400">{{ $statKelayakan['unfit'] }}</strong> pasien</span>
                     </div>
                 </div>
-            </div>
+            </x-filament::section>
 
             {{-- Kartu 3: Total Pasien --}}
-            <div class="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+            <x-filament::section class="transition-all duration-200 hover:-translate-y-0.5">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Pasien</span>
-                    <span class="rounded-full bg-blue-50 p-2 text-blue-700 transition-colors group-hover:bg-blue-100 dark:bg-blue-950/60 dark:text-blue-300 dark:group-hover:bg-blue-900/60">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Pasien Terdaftar</span>
+                    <span class="rounded-full bg-blue-50 p-2 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
                         <x-heroicon-o-identification class="size-5" />
                     </span>
                 </div>
@@ -97,16 +111,16 @@
                         {{ number_format($totalPasien) }}
                     </div>
                     <div class="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        Total rekam identitas terdaftar di sistem
+                        Total rekam identitas pasien terdaftar
                     </div>
                 </div>
-            </div>
+            </x-filament::section>
 
             {{-- Kartu 4: Total Arsip MCU --}}
-            <div class="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
+            <x-filament::section class="transition-all duration-200 hover:-translate-y-0.5">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Arsip MCU</span>
-                    <span class="rounded-full bg-slate-100 p-2 text-slate-700 transition-colors group-hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:group-hover:bg-slate-700">
+                    <span class="rounded-full bg-slate-100 p-2 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                         <x-heroicon-o-shield-check class="size-5" />
                     </span>
                 </div>
@@ -116,37 +130,38 @@
                     </div>
                     <div class="mt-1 flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
                         <span class="inline-block size-1.5 rounded-full bg-emerald-500"></span>
-                        Arsip tersimpan dengan audit log
+                        Arsip terenkripsi dengan log audit
                     </div>
                 </div>
-            </div>
-        </div>
+            </x-filament::section>
+        </x-filament::grid>
 
         {{-- Tabel Aktivitas Pemeriksaan Terkini --}}
-        <div class="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-            <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-                <div>
-                    <h3 class="text-base font-bold text-slate-900 dark:text-white">
-                        Sertifikasi MCU Terkini
-                    </h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">
-                        Daftar 8 pemeriksaan medis yang terakhir didaftarkan atau diperbarui.
-                    </p>
-                </div>
-                <a
+        <x-filament::section>
+            <x-slot name="heading">
+                Sertifikasi MCU Terkini
+            </x-slot>
+            <x-slot name="description">
+                Daftar pemeriksaan medis yang terakhir didaftarkan atau diperbarui.
+            </x-slot>
+            <x-slot name="headerEnd">
+                <x-filament::link
                     href="{{ $this->getUrlDaftarPemeriksaan() }}"
-                    class="text-xs font-semibold text-[#C52242] hover:text-[#a61c36]"
+                    color="danger"
+                    size="sm"
+                    icon="heroicon-m-arrow-right"
+                    icon-position="after"
                 >
-                    Lihat Semua Arsip &rarr;
-                </a>
-            </div>
+                    Lihat Semua Arsip
+                </x-filament::link>
+            </x-slot>
 
             @php
                 $pemeriksaanList = $this->getPemeriksaanTerbaru();
             @endphp
 
             @if($pemeriksaanList->isEmpty())
-                <div class="px-6 py-12 text-center">
+                <div class="py-12 text-center">
                     <x-heroicon-o-document-text class="mx-auto size-12 text-slate-300 dark:text-slate-600" />
                     <h4 class="mt-3 text-sm font-semibold text-slate-800 dark:text-slate-200">
                         Belum Ada Data Pemeriksaan
@@ -155,19 +170,21 @@
                         Mulai daftarkan pemeriksaan MCU pertama untuk menerbitkan sertifikat dan QR verifikasi resmi.
                     </p>
                     <div class="mt-4">
-                        <a
+                        <x-filament::button
+                            tag="a"
                             href="{{ $this->getUrlPemeriksaanBaru() }}"
-                            class="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#C52242] px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#a61c36]"
+                            icon="heroicon-m-plus"
+                            color="danger"
+                            size="sm"
                         >
-                            <x-heroicon-m-plus class="size-4" />
                             Tambah Pemeriksaan Sekarang
-                        </a>
+                        </x-filament::button>
                     </div>
                 </div>
             @else
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-full text-left text-sm" role="table">
-                        <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:bg-slate-800/50 dark:text-slate-400">
+                        <thead class="border-b border-slate-200 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:text-slate-400">
                             <tr>
                                 <th scope="col" class="px-4 py-3">Nomor MCU</th>
                                 <th scope="col" class="px-4 py-3">Pasien</th>
@@ -199,42 +216,48 @@
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3.5">
                                         @if($mcu->status_kelayakan === 'FIT')
-                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                                                <span class="size-1.5 rounded-full bg-emerald-500"></span>
+                                            <x-filament::badge color="success">
                                                 FIT
-                                            </span>
+                                            </x-filament::badge>
                                         @elseif($mcu->status_kelayakan === 'UNFIT')
-                                            <span class="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700 dark:bg-rose-950/60 dark:text-rose-300">
-                                                <span class="size-1.5 rounded-full bg-rose-500"></span>
+                                            <x-filament::badge color="danger">
                                                 UNFIT
-                                            </span>
+                                            </x-filament::badge>
+                                        @elseif($mcu->status_kelayakan === 'DRAFT')
+                                            <x-filament::badge color="gray">
+                                                DRAF
+                                            </x-filament::badge>
                                         @else
-                                            <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                                            <x-filament::badge color="warning">
                                                 {{ $mcu->status_kelayakan ?? '-' }}
-                                            </span>
+                                            </x-filament::badge>
                                         @endif
                                     </td>
                                     <td class="whitespace-nowrap px-4 py-3.5 text-right">
                                         <div class="inline-flex items-center justify-end gap-2">
                                             @if($mcu->token_verifikasi)
-                                                <a
+                                                <x-filament::button
+                                                    tag="a"
                                                     href="{{ url('/v/' . $mcu->token_verifikasi) }}"
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    class="inline-flex min-h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                                                    icon="heroicon-m-qr-code"
+                                                    color="gray"
+                                                    size="xs"
                                                     title="Lihat Verifikasi Publik"
                                                 >
-                                                    <x-heroicon-m-qr-code class="size-4 text-slate-500" />
                                                     QR
-                                                </a>
+                                                </x-filament::button>
                                             @endif
-                                            <a
+                                            <x-filament::button
+                                                tag="a"
                                                 href="{{ \App\Filament\Resources\PemeriksaanMcuResource::getUrl('edit', ['record' => $mcu->id]) }}"
-                                                class="inline-flex min-h-9 items-center gap-1 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                                                icon="heroicon-m-pencil-square"
+                                                color="gray"
+                                                size="xs"
                                             >
-                                                <x-heroicon-m-pencil-square class="size-4 text-slate-500" />
                                                 Edit
-                                            </a>
+                                            </x-filament::button>
                                         </div>
                                     </td>
                                 </tr>
@@ -243,6 +266,6 @@
                     </table>
                 </div>
             @endif
-        </div>
+        </x-filament::section>
     </div>
 </x-filament-panels::page>

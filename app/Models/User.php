@@ -150,4 +150,12 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     {
         return $this->hasMany(LogAudit::class, 'id_pengguna');
     }
+
+    /**
+     * Mengirim notifikasi pemulihan kata sandi dengan format resmi Klinik Indosehat 2003.
+     */
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new \App\Notifications\ResetPasswordNotification($token));
+    }
 }

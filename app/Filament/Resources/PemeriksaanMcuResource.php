@@ -47,25 +47,25 @@ class PemeriksaanMcuResource extends Resource
                             ->columnSpan(['default' => 1, 'lg' => 8])
                             ->schema([
                                 Section::make('1. Data Sertifikat MCU')
-                                    ->description('Isi data pasien dan hasil pemeriksaan MCU secara lengkap.')
+                                    ->description('Isi data pasien dan hasil evaluasi kelaikan medis maritim.')
                                     ->icon('heroicon-o-document-text')
                                     ->collapsible()
                                     ->schema([
                                         Grid::make(['default' => 1, 'md' => 2])->schema([
                                             TextInput::make('nama_pasien')
-                                                ->label('Nama Lengkap (Name)')
+                                                ->label('Nama Lengkap')
                                                 ->required()
                                                 ->maxLength(255)
-                                                ->placeholder('Contoh: AZIZ')
+                                                ->placeholder('Contoh: Aziz Rahman')
                                                 ->autofocus()
                                                 ->autocomplete('off')
                                                 ->live(debounce: 1000),
 
                                             Select::make('jenis_kelamin')
-                                                ->label('Jenis Kelamin (Gender)')
+                                                ->label('Jenis Kelamin')
                                                 ->options([
-                                                    'Laki-laki' => 'Laki-laki (Male)',
-                                                    'Perempuan' => 'Perempuan (Female)',
+                                                    'Laki-laki' => 'Laki-laki',
+                                                    'Perempuan' => 'Perempuan',
                                                 ])
                                                 ->required()
                                                 ->native(false),
@@ -73,7 +73,7 @@ class PemeriksaanMcuResource extends Resource
 
                                         Grid::make(['default' => 1, 'md' => 2])->schema([
                                             DatePicker::make('tanggal_lahir')
-                                                ->label('Tanggal Lahir (Date of Birth)')
+                                                ->label('Tanggal Lahir')
                                                 ->required()
                                                 ->maxDate(now())
                                                 ->displayFormat('d/m/Y')
@@ -81,37 +81,38 @@ class PemeriksaanMcuResource extends Resource
                                                 ->native(false),
 
                                             TextInput::make('no_ktp')
-                                                ->label('KTP (ID Number)')
+                                                ->label('Nomor KTP (NIK)')
                                                 ->required()
                                                 ->length(16)
                                                 ->regex('/^[0-9]{16}$/')
                                                 ->validationMessages([
                                                     'regex' => 'Nomor KTP wajib tepat 16 digit angka.',
                                                 ])
-                                                ->placeholder('16 Digit NIK')
+                                                ->placeholder('16 digit NIK')
                                                 ->autocomplete('off')
                                                 ->extraInputAttributes(['inputmode' => 'numeric', 'pattern' => '[0-9]*'])
-                                                ->helperText('Jika NIK sudah ada, data pasien otomatis diperbarui.'),
+                                                ->helperText('Jika NIK sudah terdaftar, profil pasien diperbarui otomatis.'),
                                         ]),
 
                                         Grid::make(['default' => 1, 'md' => 2])->schema([
                                             TextInput::make('no_paspor')
-                                                ->label('Paspor (Passport) - Opsional')
+                                                ->label('Nomor Paspor (Opsional)')
                                                 ->maxLength(30)
                                                 ->autocomplete('off')
-                                                ->placeholder('Nomor Paspor Aktif'),
+                                                ->placeholder('Nomor paspor aktif'),
 
                                             TextInput::make('nama_perusahaan')
-                                                ->label('Perusahaan (Company)')
+                                                ->label('Nama Perusahaan / Kapal')
                                                 ->required()
                                                 ->maxLength(255)
                                                 ->autocomplete('off')
-                                                ->placeholder('PT / Perusahaan Pemohon'),
+                                                ->placeholder('PT Pelayaran / Nama Kapal')
+                                                ->live(debounce: 1000),
                                         ]),
 
                                         Grid::make(['default' => 1, 'md' => 2])->schema([
                                             DatePicker::make('tanggal_periksa')
-                                                ->label('Tanggal MCU (Date of Checkup)')
+                                                ->label('Tanggal Pemeriksaan')
                                                 ->required()
                                                 ->default(now()->toDateString())
                                                 ->displayFormat('d/m/Y')
@@ -119,7 +120,7 @@ class PemeriksaanMcuResource extends Resource
                                                 ->native(false),
 
                                             DatePicker::make('berlaku_sampai')
-                                                ->label('Berlaku Sampai (Valid Until)')
+                                                ->label('Masa Berlaku Sertifikat')
                                                 ->required()
                                                 ->default(now()->addYears(2)->toDateString())
                                                 ->displayFormat('d/m/Y')
@@ -127,43 +128,36 @@ class PemeriksaanMcuResource extends Resource
                                                 ->native(false),
                                         ]),
 
-                                        ToggleButtons::make('status_kelayakan')
-                                            ->label('Status Kelayakan (Fitness Status)')
+                                        Select::make('status_kelayakan')
+                                            ->label('Status Kelayakan Medis')
                                             ->options([
-                                                'DRAFT' => 'DRAFT',
                                                 'FIT' => 'FIT',
                                                 'UNFIT' => 'UNFIT',
-                                                'DICABUT' => 'DICABUT / DIBATALKAN',
+                                                'Draf' => 'Draf',
+                                                'DICABUT' => 'Dicabut',
                                             ])
-                                            ->colors([
-                                                'DRAFT' => 'gray',
-                                                'FIT' => 'success',
-                                                'UNFIT' => 'danger',
-                                                'DICABUT' => 'warning',
-                                            ])
-                                            ->icons([
-                                                'DRAFT' => 'heroicon-m-pencil-square',
-                                                'FIT' => 'heroicon-m-check-badge',
-                                                'UNFIT' => 'heroicon-m-x-circle',
-                                                'DICABUT' => 'heroicon-m-no-symbol',
-                                            ])
-                                            ->inline()
+                                            ->default('FIT')
                                             ->required()
+                                            ->native(false)
                                             ->live(),
                                     ]),
 
                                 Section::make('2. Lampiran File (Opsional)')
-                                    ->description('Unggah hasil cetak PDF atau foto dokumen (JPG/PNG). Berkas akan ditumpuk di bawah sertifikat cover.')
+                                    ->description('Unggah hasil cetak berkas PDF atau foto dokumen (JPG/PNG).')
                                     ->icon('heroicon-o-paper-clip')
                                     ->collapsible()
                                     ->schema([
                                         FileUpload::make('lampiran_file')
-                                            ->label('Unggah Berkas PDF / Foto Hasil Cetak (JPG/PNG)')
+                                            ->label('Berkas Rekam Medis / Hasil Cetak')
                                             ->disk('local')
                                             ->directory('lampiran-mcu')
                                             ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
                                             ->maxSize(20480)
-                                            ->helperText('Format PDF, JPG, atau PNG (Maks. 20MB). Berkas akan dirender tepat di bawah lembar cover sertifikat MCU.'),
+                                            ->previewable(false)
+                                            ->downloadable()
+                                            ->openable()
+                                            ->uploadingMessage('Mengunggah berkas medis...')
+                                            ->helperText('Format PDF, JPG, atau PNG (Maks. 20MB). Berkas tersimpan di penyimpanan terlindung.'),
                                     ]),
                             ]),
 
@@ -172,7 +166,7 @@ class PemeriksaanMcuResource extends Resource
                             ->columnSpan(['default' => 1, 'lg' => 4])
                             ->schema([
                                 Section::make('3. Pratinjau Sertifikat & QR')
-                                    ->description('QR Code real-time yang dapat discan saat sertifikat diterbitkan.')
+                                    ->description('Kode QR real-time diterbitkan resmi saat sertifikat disimpan.')
                                     ->icon('heroicon-o-qr-code')
                                     ->extraAttributes(['class' => 'lg:sticky lg:top-4'])
                                     ->schema([
@@ -181,7 +175,7 @@ class PemeriksaanMcuResource extends Resource
                                                 'record' => $record,
                                                 'nama' => (string) ($get('nama_pasien') ?: ($record?->pasien?->nama ?? '-')),
                                                 'perusahaan' => (string) ($get('nama_perusahaan') ?: ($record?->nama_perusahaan ?? '-')),
-                                                'status' => (string) ($get('status_kelayakan') ?: ($record?->status_kelayakan ?? 'FIT')),
+                                                'status' => (string) ($get('status_kelayakan') ?: ($record?->status_kelayakan ?? 'DRAFT')),
                                                 'verifyUrl' => $record?->token_verifikasi
                                                     ? route('mcu.verify', ['uuid' => $record->token_verifikasi])
                                                     : null,

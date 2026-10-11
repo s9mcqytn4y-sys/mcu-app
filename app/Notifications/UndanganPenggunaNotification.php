@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Password;
 
 class UndanganPenggunaNotification extends Notification implements ShouldQueue
 {
@@ -28,14 +29,23 @@ class UndanganPenggunaNotification extends Notification implements ShouldQueue
             'email' => $notifiable->getEmailForPasswordReset(),
         ]);
 
+        $peranLabel = match ($notifiable->peran ?? 'staf') {
+            'administrator' => 'Administrator Sistem (Akses Penuh)',
+            default => 'Staf Operasional (MCU & Pasien)',
+        };
+
         return (new MailMessage)
-            ->subject('Undangan Bergabung - Sistem MCU Klinik Indosehat 2003')
+            ->subject('Undangan Aktivasi Akun - Klinik Indosehat 2003')
             ->greeting('Halo, ' . $notifiable->name . '!')
-            ->line('Anda telah didaftarkan sebagai pengguna pada Sistem Informasi Medical Check-Up Klinik Indosehat 2003 dengan peran: **' . strtoupper($notifiable->peran ?? 'STAFF') . '**.')
-            ->line('Silakan klik tombol di bawah ini untuk mengaktifkan akun dan mengatur kata sandi Anda:')
+            ->line('Akun Anda telah didaftarkan pada Sistem Informasi Medical Check-Up Klinik Indosehat 2003.')
+            ->line('**Detail Kredensial Pengguna:**')
+            ->line('• Nama Pengguna: **' . ($notifiable->username ?? '-') . '**')
+            ->line('• Alamat Surel: **' . $notifiable->email . '**')
+            ->line('• Tingkat Wewenang: **' . $peranLabel . '**')
+            ->line('Silakan klik tombol di bawah untuk mengaktifkan akun dan mengatur kata sandi Anda:')
             ->action('Aktivasi Akun & Atur Kata Sandi', $resetUrl)
-            ->line('Tautan aktivasi ini akan kedaluwarsa dalam 60 menit.')
-            ->line('Jika Anda tidak merasa didaftarkan, silakan abaikan surel ini.')
-            ->salutation('Salam hormat,' . "\n" . 'Tim IT Klinik Indosehat 2003');
+            ->line('Demi keamanan kredensial medis, tautan ini hanya berlaku selama **60 menit**.')
+            ->line('Jika Anda tidak merasa didaftarkan oleh administrator klinik, abaikan surel ini.')
+            ->salutation("Salam hangat,\nKlinik Indosehat 2003");
     }
 }

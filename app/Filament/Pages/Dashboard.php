@@ -101,6 +101,11 @@ class Dashboard extends FilamentDashboard
         return PasienResource::getUrl('index');
     }
 
+    public function getUrlRegistrasiPasien(): string
+    {
+        return PasienResource::getUrl('create');
+    }
+
     public function getUrlLogAudit(): ?string
     {
         $user = auth()->user();

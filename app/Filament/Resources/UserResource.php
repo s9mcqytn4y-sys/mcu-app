@@ -38,6 +38,11 @@ class UserResource extends Resource
         return $user !== null && $user->apakahAdministrator();
     }
 
+    public static function canViewAny(): bool
+    {
+        return static::canAccess();
+    }
+
     public static function form(Form $form): Form
     {
         return $form
@@ -56,7 +61,7 @@ class UserResource extends Resource
                             ->extraInputAttributes(['class' => 'min-h-[44px]']),
 
                         TextInput::make('username')
-                            ->label('Nama Pengguna (Username)')
+                            ->label('Nama Pengguna')
                             ->placeholder('Contoh: budi_santoso')
                             ->required()
                             ->unique(ignoreRecord: true)
@@ -66,7 +71,7 @@ class UserResource extends Resource
                             ->extraInputAttributes(['class' => 'min-h-[44px]']),
 
                         TextInput::make('email')
-                            ->label('Alamat Surel (Email)')
+                            ->label('Alamat Surel')
                             ->placeholder('Contoh: budi@klinikindosehat2003.com')
                             ->email()
                             ->required()
@@ -76,7 +81,7 @@ class UserResource extends Resource
                             ->extraInputAttributes(['class' => 'min-h-[44px]', 'inputmode' => 'email']),
 
                         Select::make('peran')
-                            ->label('Peran Akses (RBAC)')
+                            ->label('Peran Akses')
                             ->options([
                                 'administrator' => 'Administrator (Akses Penuh)',
                                 'staf' => 'Staf Operasional (MCU & Pasien)',
