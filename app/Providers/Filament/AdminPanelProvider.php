@@ -39,7 +39,6 @@ class AdminPanelProvider extends PanelProvider
             ->darkModeBrandLogo(asset('images/logo/logo-indosehat-horizontal.png'))
             ->brandLogoHeight('2.75rem')
             ->favicon(asset('favicon.ico'))
-            ->viteTheme('resources/css/app.css')
             ->passwordReset()
             ->emailVerification()
             ->profile()
@@ -52,6 +51,10 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->sidebarCollapsibleOnDesktop()
             ->breadcrumbs(true)
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => '<style>' . (file_exists(resource_path('css/app.css')) ? file_get_contents(resource_path('css/app.css')) : '') . '</style>'
+            )
             ->renderHook(
                 PanelsRenderHook::SIDEBAR_FOOTER,
                 fn (): \Illuminate\Contracts\View\View => view('filament.components.version-badge')

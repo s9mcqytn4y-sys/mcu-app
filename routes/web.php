@@ -14,4 +14,8 @@ Route::middleware(\App\Http\Middleware\PreventSensitiveCaching::class)->group(fu
 Route::get('/api/health/version', [\App\Http\Controllers\HealthCheckController::class, 'version'])
     ->name('api.health.version');
 
+Route::get('/deploy/refresh', [\App\Http\Controllers\DeploymentController::class, 'refresh'])
+    ->name('deploy.refresh');
+
+
 
