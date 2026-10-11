@@ -1,10 +1,229 @@
--- MCU Indosehat 2003 MySQL Dump
+-- ========================================================
+-- MCU Indosehat 2003 - MySQL Production Migration Dump
+-- Generated at: 2026-10-11 12:59:23
+-- Target: Hostinger LiteSpeed / MariaDB / MySQL 8.x
+-- ========================================================
+
+SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS=0;
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 
--- Table: `users`
+-- --------------------------------------------------------
+-- Table structure for `users`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `username` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `peran` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'staf',
+  `aktif` tinyint(1) NOT NULL DEFAULT '1',
+  `waktu_login_terakhir` timestamp NULL DEFAULT NULL,
+  `ip_login_terakhir` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `token_undangan` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `undangan_dikirim_pada` timestamp NULL DEFAULT NULL,
+  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `users_username_unique` (`username`),
+  UNIQUE KEY `users_email_unique` (`email`),
+  UNIQUE KEY `users_token_undangan_unique` (`token_undangan`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for `password_reset_tokens`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for `sessions`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text COLLATE utf8mb4_unicode_ci,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `last_activity` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `sessions_user_id_index` (`user_id`),
+  KEY `sessions_last_activity_index` (`last_activity`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for `cache`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `cache` (
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `value` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `expiration` int NOT NULL,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `cache_locks` (
+  `key` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `owner` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `expiration` int NOT NULL,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for `jobs`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `jobs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `queue` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `attempts` tinyint unsigned NOT NULL,
+  `reserved_at` int unsigned DEFAULT NULL,
+  `available_at` int unsigned NOT NULL,
+  `created_at` int unsigned NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `jobs_queue_index` (`queue`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `job_batches` (
+  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `total_jobs` int NOT NULL,
+  `pending_jobs` int NOT NULL,
+  `failed_jobs` int NOT NULL,
+  `failed_job_ids` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `options` mediumtext COLLATE utf8mb4_unicode_ci,
+  `cancelled_at` int DEFAULT NULL,
+  `created_at` int NOT NULL,
+  `finished_at` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `failed_jobs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `connection` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `queue` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `exception` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `failed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for `pasien`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `pasien` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nama` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `jenis_kelamin` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tanggal_lahir` date DEFAULT NULL,
+  `no_ktp` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `no_paspor` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `pasien_nama_index` (`nama`),
+  KEY `pasien_no_ktp_index` (`no_ktp`),
+  KEY `pasien_no_paspor_index` (`no_paspor`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for `nomor_mcu_sekuens`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `nomor_mcu_sekuens` (
+  `tahun` smallint unsigned NOT NULL,
+  `sekuens_terakhir` int unsigned NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`tahun`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for `pemeriksaan_mcu`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `pemeriksaan_mcu` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `pasien_id` bigint unsigned NOT NULL,
+  `nomor_mcu` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tanggal_periksa` date NOT NULL,
+  `berlaku_sampai` date DEFAULT NULL,
+  `nama_perusahaan` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `status_kelayakan` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'FIT',
+  `wilayah_operasi` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `departemen` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `jenis_kapal` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `catatan` text COLLATE utf8mb4_unicode_ci,
+  `token_verifikasi` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `dibuat_oleh` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `pemeriksaan_mcu_nomor_mcu_unique` (`nomor_mcu`),
+  UNIQUE KEY `pemeriksaan_mcu_token_verifikasi_unique` (`token_verifikasi`),
+  KEY `pemeriksaan_mcu_pasien_id_foreign` (`pasien_id`),
+  KEY `pemeriksaan_mcu_dibuat_oleh_foreign` (`dibuat_oleh`),
+  CONSTRAINT `pemeriksaan_mcu_pasien_id_foreign` FOREIGN KEY (`pasien_id`) REFERENCES `pasien` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `pemeriksaan_mcu_dibuat_oleh_foreign` FOREIGN KEY (`dibuat_oleh`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for `lampiran_mcu`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `lampiran_mcu` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `pemeriksaan_mcu_id` bigint unsigned NOT NULL,
+  `path_berkas` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nama_berkas` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tipe_mime` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ukuran_berkas` bigint unsigned NOT NULL,
+  `jenis_lampiran` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'sertifikat',
+  `hash_sha256` varchar(64) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `diunggah_oleh` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `lampiran_mcu_pemeriksaan_mcu_id_foreign` (`pemeriksaan_mcu_id`),
+  KEY `lampiran_mcu_diunggah_oleh_foreign` (`diunggah_oleh`),
+  CONSTRAINT `lampiran_mcu_pemeriksaan_mcu_id_foreign` FOREIGN KEY (`pemeriksaan_mcu_id`) REFERENCES `pemeriksaan_mcu` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lampiran_mcu_diunggah_oleh_foreign` FOREIGN KEY (`diunggah_oleh`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Table structure for `log_audit`
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `log_audit` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_pengguna` bigint unsigned DEFAULT NULL,
+  `tindakan` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tipe_model` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id_model` bigint unsigned DEFAULT NULL,
+  `alamat_ip` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `agen_pengguna` text COLLATE utf8mb4_unicode_ci,
+  `rincian` json DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `log_audit_tindakan_index` (`tindakan`),
+  KEY `log_audit_id_pengguna_foreign` (`id_pengguna`),
+  CONSTRAINT `log_audit_id_pengguna_foreign` FOREIGN KEY (`id_pengguna`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Dumping data for table `users`
+-- --------------------------------------------------------
 INSERT INTO `users` (`id`, `name`, `username`, `email`, `email_verified_at`, `password`, `peran`, `aktif`, `waktu_login_terakhir`, `ip_login_terakhir`, `remember_token`, `created_at`, `updated_at`, `token_undangan`, `undangan_dikirim_pada`) VALUES (1, 'Wira Pramudya', 'wira', 'wirapramudya2q@gmail.com', '2026-10-11 10:14:14', '$2y$12$6cqi/LN5vsTA3F1t9j0puOMxpI1zobqs2UfE//RRpbEXVia3AbLMi', 'administrator', 1, NULL, NULL, 'XCS5RiKpkTIc6WUat4RN7RkhidcHpbbtQpda01wWDp92QrpPTEM9KTSrZdmC', '2026-10-11 10:14:14', '2026-10-11 10:14:14', NULL, NULL);
+INSERT INTO `users` (`id`, `name`, `username`, `email`, `email_verified_at`, `password`, `peran`, `aktif`, `waktu_login_terakhir`, `ip_login_terakhir`, `remember_token`, `created_at`, `updated_at`, `token_undangan`, `undangan_dikirim_pada`) VALUES (2, 'Staf Operasional', 'staf', 'staf@klinikindosehat2003.com', NULL, '$2y$12$/BAttU/5yIun35KyDb9u5uT0jQGKAAWphYNjI7irmPvdjTpq8TOqm', 'staf', 1, NULL, NULL, NULL, '2026-10-11 12:58:40', '2026-10-11 12:58:40', NULL, NULL);
 
--- Table: `pasien`
+-- --------------------------------------------------------
+-- Dumping data for table `pasien`
+-- --------------------------------------------------------
 INSERT INTO `pasien` (`id`, `nama`, `jenis_kelamin`, `tanggal_lahir`, `no_ktp`, `no_paspor`, `created_at`, `updated_at`) VALUES (1, 'Budi Santoso', 'L', '1988-05-14', '3275012345670001', 'B1234567', '2026-10-11 10:14:14', '2026-10-11 10:14:14');
 INSERT INTO `pasien` (`id`, `nama`, `jenis_kelamin`, `tanggal_lahir`, `no_ktp`, `no_paspor`, `created_at`, `updated_at`) VALUES (2, 'Siti Rahmawati', 'P', '1992-11-20', '3171098765430002', NULL, '2026-10-11 10:14:14', '2026-10-11 10:14:14');
 INSERT INTO `pasien` (`id`, `nama`, `jenis_kelamin`, `tanggal_lahir`, `no_ktp`, `no_paspor`, `created_at`, `updated_at`) VALUES (3, '[PERLU REVIEW MANUAL - ARSIP LEGACY]', 'Laki-laki', '1990-01-01', 'LEGACY-53fddba9-', NULL, '2026-10-11 12:04:55', '2026-10-11 12:04:55');
@@ -58,7 +277,13 @@ INSERT INTO `pasien` (`id`, `nama`, `jenis_kelamin`, `tanggal_lahir`, `no_ktp`, 
 INSERT INTO `pasien` (`id`, `nama`, `jenis_kelamin`, `tanggal_lahir`, `no_ktp`, `no_paspor`, `created_at`, `updated_at`) VALUES (51, 'RAHMATULLAH', 'Laki-laki', '1993-11-13', '7305091311930002', 'Y1392504', '2026-10-11 12:04:56', '2026-10-11 12:04:56');
 INSERT INTO `pasien` (`id`, `nama`, `jenis_kelamin`, `tanggal_lahir`, `no_ktp`, `no_paspor`, `created_at`, `updated_at`) VALUES (52, 'ZAENAL', 'Laki-laki', '1983-10-14', '7306021409830002', NULL, '2026-10-11 12:04:56', '2026-10-11 12:04:56');
 
--- Table: `pemeriksaan_mcu`
+-- --------------------------------------------------------
+-- Dumping data for table `nomor_mcu_sekuens`
+-- --------------------------------------------------------
+
+-- --------------------------------------------------------
+-- Dumping data for table `pemeriksaan_mcu`
+-- --------------------------------------------------------
 INSERT INTO `pemeriksaan_mcu` (`id`, `pasien_id`, `nomor_mcu`, `tanggal_periksa`, `berlaku_sampai`, `nama_perusahaan`, `status_kelayakan`, `wilayah_operasi`, `departemen`, `jenis_kapal`, `catatan`, `token_verifikasi`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES (1, 1, 'MCU-2026-0001', '2026-08-01', '2027-08-01', 'PT Pelayaran Samudera Jaya', 'FIT', 'Internasional', 'Deck', 'Container Vessel', 'Kondisi fisik prima, visus normal dengan kacamata.', 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 1, '2026-10-11 10:14:14', '2026-10-11 10:14:14');
 INSERT INTO `pemeriksaan_mcu` (`id`, `pasien_id`, `nomor_mcu`, `tanggal_periksa`, `berlaku_sampai`, `nama_perusahaan`, `status_kelayakan`, `wilayah_operasi`, `departemen`, `jenis_kapal`, `catatan`, `token_verifikasi`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES (2, 2, 'MCU-2026-0002', '2026-08-05', '2027-08-05', 'PT Maritim Nusantara', 'UNFIT', 'Domestik', 'Engine', 'Bulk Carrier', 'Disarankan kontrol rutin tekanan darah.', 'b0eebc99-9c0b-4ef8-bb6d-6bb9bd380a22', 1, '2026-10-11 10:14:14', '2026-10-11 10:14:14');
 INSERT INTO `pemeriksaan_mcu` (`id`, `pasien_id`, `nomor_mcu`, `tanggal_periksa`, `berlaku_sampai`, `nama_perusahaan`, `status_kelayakan`, `wilayah_operasi`, `departemen`, `jenis_kapal`, `catatan`, `token_verifikasi`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES (3, 3, 'ARC-53FDDBA93C', '2026-08-07', '2028-08-07', 'Klinik Indosehat 2003 (Arsip)', 'DRAF', NULL, NULL, NULL, 'Arsip historis legacy tanpa NIK/nama lengkap terverifikasi (ID Legacy: 53fddba9-3c09-4698-9d27-ab21ab3f03db). Perlu rekonsiliasi manual.', '53fddba9-3c09-4698-9d27-ab21ab3f03db', 1, '2026-10-11 12:04:55', '2026-10-11 12:04:55');
@@ -132,7 +357,9 @@ INSERT INTO `pemeriksaan_mcu` (`id`, `pasien_id`, `nomor_mcu`, `tanggal_periksa`
 INSERT INTO `pemeriksaan_mcu` (`id`, `pasien_id`, `nomor_mcu`, `tanggal_periksa`, `berlaku_sampai`, `nama_perusahaan`, `status_kelayakan`, `wilayah_operasi`, `departemen`, `jenis_kapal`, `catatan`, `token_verifikasi`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES (71, 52, 'ARC-19B39A540D', '2026-10-10', '2028-10-10', 'PRIVATE', 'FIT', NULL, NULL, NULL, 'Diimpor dari arsip historis legacy Klinik Indosehat 2003 (ID Sumber: 19b39a54-0da7-48eb-9c04-0ad2d4e05f41).', '19b39a54-0da7-48eb-9c04-0ad2d4e05f41', 1, '2026-10-11 12:04:56', '2026-10-11 12:04:56');
 INSERT INTO `pemeriksaan_mcu` (`id`, `pasien_id`, `nomor_mcu`, `tanggal_periksa`, `berlaku_sampai`, `nama_perusahaan`, `status_kelayakan`, `wilayah_operasi`, `departemen`, `jenis_kapal`, `catatan`, `token_verifikasi`, `dibuat_oleh`, `created_at`, `updated_at`) VALUES (72, 52, 'ARC-1DF3117080', '2026-10-10', '2028-10-10', 'PRIVATE', 'FIT', NULL, NULL, NULL, 'Diimpor dari arsip historis legacy Klinik Indosehat 2003 (ID Sumber: 1df31170-803b-4cb8-88c5-09464dea3543).', '1df31170-803b-4cb8-88c5-09464dea3543', 1, '2026-10-11 12:04:56', '2026-10-11 12:04:56');
 
--- Table: `lampiran_mcu`
+-- --------------------------------------------------------
+-- Dumping data for table `lampiran_mcu`
+-- --------------------------------------------------------
 INSERT INTO `lampiran_mcu` (`id`, `pemeriksaan_mcu_id`, `path_berkas`, `nama_berkas`, `tipe_mime`, `ukuran_berkas`, `jenis_lampiran`, `hash_sha256`, `diunggah_oleh`, `created_at`, `updated_at`) VALUES (1, 3, 'lampiran-mcu/3/53fddba9-3c09-4698-9d27-ab21ab3f03db_1.jpeg', '53fddba9-3c09-4698-9d27-ab21ab3f03db_1.jpeg', 'image/jpeg', 492468, 'DOKUMEN_KLINIS', '4d175fb210e9b6579c995bb1f60595d4c09d00d516afce88c97c43bee9159239', 1, '2026-10-11 12:04:55', '2026-10-11 12:04:55');
 INSERT INTO `lampiran_mcu` (`id`, `pemeriksaan_mcu_id`, `path_berkas`, `nama_berkas`, `tipe_mime`, `ukuran_berkas`, `jenis_lampiran`, `hash_sha256`, `diunggah_oleh`, `created_at`, `updated_at`) VALUES (2, 3, 'lampiran-mcu/3/53fddba9-3c09-4698-9d27-ab21ab3f03db_2.jpeg', '53fddba9-3c09-4698-9d27-ab21ab3f03db_2.jpeg', 'image/jpeg', 826474, 'DOKUMEN_KLINIS', '175907099f44c466f7276c8805f30681692bc75a38aec5ca2fb79b0b94c6fd04', 1, '2026-10-11 12:04:55', '2026-10-11 12:04:55');
 INSERT INTO `lampiran_mcu` (`id`, `pemeriksaan_mcu_id`, `path_berkas`, `nama_berkas`, `tipe_mime`, `ukuran_berkas`, `jenis_lampiran`, `hash_sha256`, `diunggah_oleh`, `created_at`, `updated_at`) VALUES (3, 4, 'lampiran-mcu/4/680074f2-8913-4f58-b988-e8c6479be035_1.jpeg', '680074f2-8913-4f58-b988-e8c6479be035_1.jpeg', 'image/jpeg', 492468, 'DOKUMEN_KLINIS', '4d175fb210e9b6579c995bb1f60595d4c09d00d516afce88c97c43bee9159239', 1, '2026-10-11 12:04:55', '2026-10-11 12:04:55');
@@ -146,7 +373,9 @@ INSERT INTO `lampiran_mcu` (`id`, `pemeriksaan_mcu_id`, `path_berkas`, `nama_ber
 INSERT INTO `lampiran_mcu` (`id`, `pemeriksaan_mcu_id`, `path_berkas`, `nama_berkas`, `tipe_mime`, `ukuran_berkas`, `jenis_lampiran`, `hash_sha256`, `diunggah_oleh`, `created_at`, `updated_at`) VALUES (11, 14, 'lampiran-mcu/14/383fef2c-5148-4877-864e-92dac38e824f_1.pdf', '383fef2c-5148-4877-864e-92dac38e824f_1.pdf', 'application/pdf', 2451349, 'DOKUMEN_KLINIS', '3540a6d257c27474ab54f1113225d683747a7fd90576a21830a544e745d5000b', 1, '2026-10-11 12:04:56', '2026-10-11 12:04:56');
 INSERT INTO `lampiran_mcu` (`id`, `pemeriksaan_mcu_id`, `path_berkas`, `nama_berkas`, `tipe_mime`, `ukuran_berkas`, `jenis_lampiran`, `hash_sha256`, `diunggah_oleh`, `created_at`, `updated_at`) VALUES (12, 17, 'lampiran-mcu/17/e2af1a3c-59c9-41e4-be2e-f98daa9c8378_1.pdf', 'e2af1a3c-59c9-41e4-be2e-f98daa9c8378_1.pdf', 'application/pdf', 2468459, 'DOKUMEN_KLINIS', '8e383a504bfa6a94807430e7e85a1f6628d266d19e40d6264ee3326c76ebe748', 1, '2026-10-11 12:04:56', '2026-10-11 12:04:56');
 
--- Table: `log_audit`
+-- --------------------------------------------------------
+-- Dumping data for table `log_audit`
+-- --------------------------------------------------------
 INSERT INTO `log_audit` (`id`, `id_pengguna`, `tindakan`, `tipe_model`, `id_model`, `alamat_ip`, `agen_pengguna`, `rincian`, `created_at`, `updated_at`) VALUES (1, NULL, 'import_arsip_legacy', 'App\\Models\\User', 1, '127.0.0.1', 'Symfony', '{\"waktu\":\"2026-10-11T12:04:56+07:00\",\"sumber_sqlite\":\"C:\\\\Users\\\\Acer\\\\Downloads\\\\database.sqlite\",\"total_diproses\":70,\"statistik\":{\"total_arsip\":70,\"pasien_baru\":47,\"pasien_eksisting\":20,\"pasien_manual_review\":7,\"mcu_valid\":63,\"mcu_draf_review\":7,\"mcu_duplikat_dilewati\":0,\"lampiran_ditemukan\":12,\"lampiran_hilang\":0}}', '2026-10-11 12:04:56', '2026-10-11 12:04:56');
 
 SET FOREIGN_KEY_CHECKS=1;

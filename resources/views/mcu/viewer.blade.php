@@ -525,7 +525,7 @@
 
     <!-- Footer Otentikasi -->
     <footer class="footer-compliance">
-        <p><strong>Klinik Indosehat 2003 Group</strong> &bull; Medical Check-Up Verification System</p>
+        <p><strong>Klinik Indosehat 2003 Group</strong> &bull; Medical Check-Up Verification System <span style="display: inline-block; padding: 2px 6px; font-size: 0.72rem; font-weight: 600; background: var(--color-bg-base); border: 1px solid var(--color-border); border-radius: 4px; margin-left: 6px;">v{{ config('app.version', '1.0.0') }}</span></p>
         <p>Dokumen ini diterbitkan secara sah dan dilindungi hak cipta &copy; {{ date('Y') }}.</p>
     </footer>
 </main>
