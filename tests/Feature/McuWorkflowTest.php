@@ -194,4 +194,18 @@ class McuWorkflowTest extends TestCase
             'id_model' => $mcu->id,
         ]);
     }
+
+    /**
+     * Memastikan staf/admin dapat mengakses formulir pembuatan MCU baru tanpa hambatan.
+     */
+    public function test_admin_bisa_mengakses_halaman_create_pemeriksaan_mcu(): void
+    {
+        $user = User::factory()->create([
+            'peran' => 'administrator',
+            'aktif' => true,
+        ]);
+
+        $response = $this->actingAs($user)->get('/admin/pemeriksaan-mcus/create');
+        $response->assertStatus(200);
+    }
 }

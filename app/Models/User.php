@@ -18,13 +18,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Dapatkan nama kolom route key untuk pengikatan rute model.
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'uuid';
-    }
+
 
     /**
      * Atribut yang dapat diisi secara massal.

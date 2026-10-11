@@ -93,13 +93,6 @@ class Pasien extends Model
         'no_paspor',
     ];
 
-    /**
-     * Dapatkan nama kolom route key untuk pengikatan rute model.
-     */
-    public function getRouteKeyName(): string
-    {
-        return 'uuid';
-    }
 
     /**
      * Tipe data casts untuk atribut.

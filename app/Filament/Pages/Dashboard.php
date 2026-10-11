@@ -86,25 +86,6 @@ class Dashboard extends FilamentDashboard
             ->get();
     }
 
-    /**
-     * Dapatkan pengelompokan pemeriksaan terkini untuk papan status alur kerja klinis.
-     *
-     * @return array<string, \Illuminate\Support\Collection<int, PemeriksaanMcu>>
-     */
-    public function getKanbanPemeriksaan(): array
-    {
-        $records = PemeriksaanMcu::with('pasien')
-            ->latest('id')
-            ->take(30)
-            ->get();
-
-        return [
-            'DRAF' => $records->filter(fn (PemeriksaanMcu $m) => in_array($m->status_kelayakan, ['DRAF', 'DRAFT', null, ''], true))->values(),
-            'FIT' => $records->filter(fn (PemeriksaanMcu $m) => $m->status_kelayakan === 'FIT')->values(),
-            'TEMPORARY UNFIT' => $records->filter(fn (PemeriksaanMcu $m) => in_array($m->status_kelayakan, ['TEMPORARY UNFIT', 'TEMPORARY_UNFIT'], true))->values(),
-            'UNFIT' => $records->filter(fn (PemeriksaanMcu $m) => in_array($m->status_kelayakan, ['UNFIT', 'DICABUT'], true))->values(),
-        ];
-    }
 
     public function getUrlPemeriksaanBaru(): string
     {

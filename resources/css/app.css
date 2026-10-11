@@ -93,43 +93,7 @@ input:-webkit-autofill:active {
     }
 }
 
-/* Compact Collapsed Sidebar on Desktop (Poin 2) */
-@media (min-width: 1024px) {
-    .fi-main-sidebar:not(:has(.fi-sidebar-open)),
-    .fi-sidebar:not(.fi-sidebar-open) {
-        width: 4.25rem !important;
-        min-width: 4.25rem !important;
-        max-width: 4.25rem !important;
-        transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
 
-    .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-header {
-        padding-inline: 0.5rem !important;
-        justify-content: center !important;
-    }
-
-    .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav {
-        padding-inline: 0.5rem !important;
-    }
-
-    .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-button {
-        justify-content: center !important;
-        padding-inline: 0.5rem !important;
-    }
-
-    .fi-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav-groups {
-        margin-inline: 0 !important;
-    }
-
-    .fi-sidebar:not(.fi-sidebar-open) .fi-version-badge-brand {
-        display: none !important;
-    }
-
-    .fi-sidebar:not(.fi-sidebar-open) .fi-version-badge-container {
-        justify-content: center !important;
-        padding-inline: 0.25rem !important;
-    }
-}
 
 /* Fix Profile Drawer / User Menu Dropdown Clipping (Poin 1) */
 .fi-topbar {

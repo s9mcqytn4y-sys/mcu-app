@@ -136,12 +136,6 @@ class PemeriksaanMcuResource extends Resource
                                             ->createOptionAction(fn (\Filament\Forms\Components\Actions\Action $action) => $action
                                                 ->modalHeading('Daftarkan Rekam Pasien Baru')
                                                 ->modalSubmitActionLabel('Simpan Pasien')
-                                                ->extraModalFooterActions([
-                                                    \Filament\Forms\Components\Actions\Action::make('batal')
-                                                        ->label('Batal')
-                                                        ->color('gray')
-                                                        ->cancel(),
-                                                ])
                                             )
                                             ->createOptionUsing(function (array $data): int {
                                                 try {
