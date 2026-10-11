@@ -20,12 +20,6 @@ class Pasien extends Model
     {
         parent::booted();
 
-        static::creating(function (Pasien $pasien): void {
-            if (empty($pasien->uuid)) {
-                $pasien->uuid = (string) \Illuminate\Support\Str::uuid();
-            }
-        });
-
         static::created(function (Pasien $pasien): void {
             LogAudit::catat(
                 tindakan: 'buat_pasien',
@@ -85,7 +79,6 @@ class Pasien extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'uuid',
         'nama',
         'jenis_kelamin',
         'tanggal_lahir',

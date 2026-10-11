@@ -26,7 +26,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
      * @var list<string>
      */
     protected $fillable = [
-        'uuid',
         'name',
         'username',
         'email',
@@ -72,12 +71,6 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     protected static function booted(): void
     {
         parent::booted();
-
-        static::creating(function (User $user): void {
-            if (empty($user->uuid)) {
-                $user->uuid = (string) \Illuminate\Support\Str::uuid();
-            }
-        });
 
         static::created(function (User $user): void {
             LogAudit::catat(
